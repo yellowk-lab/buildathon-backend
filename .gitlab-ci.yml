@@ -100,7 +100,6 @@ migrate-prod-db:
   rules:
     - if: '$CI_COMMIT_TAG != null'
 release-prod-image:
-
   stage: release
   script:
     - docker build --pull --cache-from $CACHE_IMAGE -t $PROD_IMAGE_TAG . --build-arg DATABASE_URL_BUILD=$DATABASE_URL_PROD
