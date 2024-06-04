@@ -9,7 +9,6 @@ This is the basic template of backend using Nestjs.
 - Docker for environment
 - Faker for generating testing data
 
-
 ## Setup
 
 Copy the `.env.example`, rename it to `.env` and enter the values you need.
@@ -49,3 +48,5 @@ $ npm run test:cov
 ## License
 
 UNLICENSED and belongs to YellowK Labs.
+
+<!-- Adding this line to trigger pipeline. -->
