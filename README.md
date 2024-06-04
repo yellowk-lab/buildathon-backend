@@ -48,5 +48,3 @@ $ npm run test:cov
 ## License
 
 UNLICENSED and belongs to YellowK Labs.
-
-<!-- Adding this line to trigger pipeline. -->
