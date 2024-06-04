@@ -16,24 +16,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-        
+
       - name: Log in to GitLab Container Registry
         run: echo ${{ secrets.GITLAB_REGISTRY_PASSWORD }} | docker login ${{ secrets.GITLAB_REGISTRY }} -u ${{ secrets.GITLAB_REGISTRY_USER }} --password-stdin
-        
-      - name: Print debug info
-        run: echo "Registry: ${{ secrets.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache"
 
       - name: Pull cache image
         run: |
-          docker pull ${{ secrets.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache || true
-        
+          docker pull ${{ VARS.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache || true
+
       - name: Build and push cache image
         run: |
-          docker build --target build --cache-from ${{ secrets.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache -t ${{ secrets.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache .
-          docker push ${{ secrets.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache
+          docker build --target build --cache-from ${{ VARS.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache -t ${{ VARS.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache .
+          docker push ${{ VARS.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache
         if: github.event_name == 'push'
 
   release-develop:
@@ -43,29 +40,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-        
+
       - name: Log in to GitLab Container Registry
         run: echo ${{ secrets.GITLAB_REGISTRY_PASSWORD }} | docker login ${{ secrets.GITLAB_REGISTRY }} -u ${{ secrets.GITLAB_REGISTRY_USER }} --password-stdin
-        
-      - name: Print debug info
-        run: echo "Registry: ${{ secrets.CI_REGISTRY_IMAGE }}:dev-${{ github.sha }}"
 
       - name: Build and push dev image
         run: |
-          docker build --pull --cache-from ${{ secrets.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache -t ${{ secrets.CI_REGISTRY_IMAGE }}:dev-${{ github.sha }} --build-arg DATABASE_URL_BUILD=${{ secrets.DATABASE_URL_DEV }} .
-          docker push ${{ secrets.CI_REGISTRY_IMAGE }}:dev-${{ github.sha }}
-        
+          docker build --pull --cache-from ${{ VARS.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache -t ${{ VARS.CI_REGISTRY_IMAGE }}:dev-${{ github.sha }} --build-arg DATABASE_URL_BUILD=${{ secrets.DATABASE_URL_DEV }} .
+          docker push ${{ VARS.CI_REGISTRY_IMAGE }}:dev-${{ github.sha }}
+
       - name: Log in to DigitalOcean Registry
         run: echo ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} --password-stdin
-        
+
       - name: Tag and push to DigitalOcean Registry
         run: |
-          docker tag ${{ secrets.CI_REGISTRY_IMAGE }}:dev-${{ github.sha }} registry.digitalocean.com/${{ secrets.IMAGE_NAME }}/dev:latest
-          docker push registry.digitalocean.com/${{ secrets.IMAGE_NAME }}/dev:latest
-        
+          docker tag ${{ VARS.CI_REGISTRY_IMAGE }}:dev-${{ github.sha }} registry.digitalocean.com/${{ vars.IMAGE_NAME }}/dev:latest
+          docker push registry.digitalocean.com/${{ vars.IMAGE_NAME }}/dev:latest
+
       - name: Deploy to DigitalOcean
         run: doctl apps create-deployment ${{ secrets.DIGITALOCEAN_DEV_APP_ID }}
         env:
@@ -78,29 +72,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-        
+
       - name: Log in to GitLab Container Registry
         run: echo ${{ secrets.GITLAB_REGISTRY_PASSWORD }} | docker login ${{ secrets.GITLAB_REGISTRY }} -u ${{ secrets.GITLAB_REGISTRY_USER }} --password-stdin
-        
-      - name: Print debug info
-        run: echo "Registry: ${{ secrets.CI_REGISTRY_IMAGE }}:uat-${{ github.sha }}"
 
       - name: Build and push uat image
         run: |
-          docker build --pull --cache-from ${{ secrets.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache -t ${{ secrets.CI_REGISTRY_IMAGE }}:uat-${{ github.sha }} --build-arg DATABASE_URL_BUILD=${{ secrets.DATABASE_URL_UAT }} .
-          docker push ${{ secrets.CI_REGISTRY_IMAGE }}:uat-${{ github.sha }}
-        
+          docker build --pull --cache-from ${{ VARS.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache -t ${{ VARS.CI_REGISTRY_IMAGE }}:uat-${{ github.sha }} --build-arg DATABASE_URL_BUILD=${{ secrets.DATABASE_URL_UAT }} .
+          docker push ${{ VARS.CI_REGISTRY_IMAGE }}:uat-${{ github.sha }}
+
       - name: Log in to DigitalOcean Registry
         run: echo ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} --password-stdin
-        
+
       - name: Tag and push to DigitalOcean Registry
         run: |
-          docker tag ${{ secrets.CI_REGISTRY_IMAGE }}:uat-${{ github.sha }} registry.digitalocean.com/${{ secrets.IMAGE_NAME }}/uat:latest
-          docker push registry.digitalocean.com/${{ secrets.IMAGE_NAME }}/uat:latest
-        
+          docker tag ${{ VARS.CI_REGISTRY_IMAGE }}:uat-${{ github.sha }} registry.digitalocean.com/${{ vars.IMAGE_NAME }}/uat:latest
+          docker push registry.digitalocean.com/${{ vars.IMAGE_NAME }}/uat:latest
+
       - name: Deploy to DigitalOcean
         run: doctl apps create-deployment ${{ secrets.DIGITALOCEAN_UAT_APP_ID }}
         env:
@@ -113,29 +104,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-        
+
       - name: Log in to GitLab Container Registry
         run: echo ${{ secrets.GITLAB_REGISTRY_PASSWORD }} | docker login ${{ secrets.GITLAB_REGISTRY }} -u ${{ secrets.GITLAB_REGISTRY_USER }} --password-stdin
-        
-      - name: Print debug info
-        run: echo "Registry: ${{ secrets.CI_REGISTRY_IMAGE }}:prod-${{ github.sha }}"
 
       - name: Build and push prod image
         run: |
-          docker build --pull --cache-from ${{ secrets.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache -t ${{ secrets.CI_REGISTRY_IMAGE }}:prod-${{ github.sha }} --build-arg DATABASE_URL_BUILD=${{ secrets.DATABASE_URL_PROD }} .
-          docker push ${{ secrets.CI_REGISTRY_IMAGE }}:prod-${{ github.sha }}
-        
+          docker build --pull --cache-from ${{ VARS.CI_REGISTRY_IMAGE }}:${{ github.sha }}-cache -t ${{ VARS.CI_REGISTRY_IMAGE }}:prod-${{ github.sha }} --build-arg DATABASE_URL_BUILD=${{ secrets.DATABASE_URL_PROD }} .
+          docker push ${{ VARS.CI_REGISTRY_IMAGE }}:prod-${{ github.sha }}
+
       - name: Log in to DigitalOcean Registry
         run: echo ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} | docker login registry.digitalocean.com -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} --password-stdin
-        
+
       - name: Tag and push to DigitalOcean Registry
         run: |
-          docker tag ${{ secrets.CI_REGISTRY_IMAGE }}:prod-${{ github.sha }} registry.digitalocean.com/${{ secrets.IMAGE_NAME }}/prod:latest
-          docker push registry.digitalocean.com/${{ secrets.IMAGE_NAME }}/prod:latest
-        
+          docker tag ${{ VARS.CI_REGISTRY_IMAGE }}:prod-${{ github.sha }} registry.digitalocean.com/${{ vars.IMAGE_NAME }}/prod:latest
+          docker push registry.digitalocean.com/${{ vars.IMAGE_NAME }}/prod:latest
+
       - name: Deploy to DigitalOcean
         run: doctl apps create-deployment ${{ secrets.DIGITALOCEAN_PROD_APP_ID }}
         env:
