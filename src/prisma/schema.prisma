@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "darwin", "linux-musl", "debian-openssl-3.0.x"]
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// null user is the platform
+model User {
+  id                       String             @id @default(uuid())
+  stripeConnectedAccountId String?            @unique @map("stripe_connected_account_id")
+  email                    String             @unique
+  firstName                String             @map("first_name")
+  lastName                 String?            @map("last_name")
+  country                  String             @db.VarChar(2) // ISO 3166-1 alpha-2 code
+  tosAccepted              Boolean            @default(false) @map("tos_accepted")
+  referralCode             String             @unique @default(uuid()) @map("referral_code")
+  // **************** general db date ****************
+  createdAt                DateTime           @default(now()) @map("created_at")
+  updatedAt                DateTime           @default(now()) @updatedAt @map("updated_at")
+  deletedAt                DateTime?          @map("deleted_at")
+  // **************** internal db references *********************
+  products                 Product[]
+  transactions             Transaction[]
+  payouts                  Payout[]
+  referrerId               String?            @map("referrer_id")
+  referrer                 User?              @relation("Affiliation", fields: [referrerId], references: [id])
+  referredUsers            User[]             @relation("Affiliation")
+  referrerFeeId            String?            @map("referrer_fee_id")
+  referrerFee              ReferralFeeConfig? @relation(fields: [referrerFeeId], references: [id])
+
+  @@map("user")
+}
+
+model Product {
+  id              String    @id @default(uuid())
+  stripeProductId String    @unique @map("stripe_product_id")
+  fileStorageHash String    @unique @map("file_storage_hash")
+  name            String?
+  price           Int
+  currency        String    @db.VarChar(3) // ISO 4217
+  clickCount      Int       @default(0) @map("click_count")
+  expiredAt       DateTime? @map("expired_at")
+  // **************** general db date ****************
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+  // **************** internal db references *********************
+  creator         User      @relation(fields: [creatorId], references: [id])
+  creatorId       String    @map("creator_id")
+  sales           Sale[]
+
+  @@map("product")
+}
+
+model Sale {
+  id                  String        @id @default(uuid())
+  stripeTransactionId String        @unique @map("stripe_transaction_id")
+  amount              Int
+  currency            String        @db.VarChar(3) // ISO 4217
+  // **************** general db date ****************
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @default(now()) @updatedAt @map("updated_at")
+  deletedAt           DateTime?     @map("deleted_at")
+  // **************** internal db references *********************
+  product             Product       @relation(fields: [productId], references: [id])
+  productId           String        @map("product_id")
+  transactions        Transaction[]
+
+  @@map("sale")
+}
+
+model Transaction {
+  id          String            @id @default(uuid())
+  amount      Int
+  currency    String            @db.VarChar(3) // ISO 4217
+  availableOn DateTime          @map("available_on")
+  status      TransactionStatus
+  type        TransactionType
+  // **************** general db date ****************
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @default(now()) @updatedAt @map("updated_at")
+  deletedAt   DateTime?         @map("deleted_at")
+  // **************** internal db references *********************
+  recipient   User?             @relation(fields: [recipientId], references: [id])
+  recipientId String?           @map("recipient_id")
+  sale        Sale              @relation(fields: [saleId], references: [id])
+  saleId      String
+  payout      Payout?           @relation(fields: [payoutId], references: [id])
+  payoutId    String?           @map("payout_id")
+
+  @@map("transaction")
+}
+
+// Always represent a transfer from our stripe account to a connected stripe account
+model Payout {
+  id             String        @id @default(uuid())
+  stripePayoutId String?       @unique @map("stripe_payout_id")
+  amount         Int
+  currency       String        @db.VarChar(3) // ISO 4217
+  status         PayoutStatus
+  // **************** general db date ****************
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @default(now()) @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+  // **************** internal db references *********************
+  recipient      User?         @relation(fields: [recipientId], references: [id])
+  recipientId    String?       @map("recipient_id")
+  transactions   Transaction[]
+
+  @@map("payout")
+}
+
+model ReferralFeeConfig {
+  id           String    @id @default(uuid())
+  percentage   Int
+  startDate    DateTime  @map("start_date")
+  endDate      DateTime  @map("end_date")
+  // **************** general db date ****************
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  // **************** internal db references *********************
+  referredUser User[]
+
+  @@map("referral_fee_config")
+}
+
+model PlatformFeeConfig {
+  id         String    @id @default(uuid())
+  percentage Int
+  startDate  DateTime  @map("start_date")
+  endDate    DateTime  @map("end_date")
+  // **************** general db date ****************
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  @@map("platform_fee_config")
+}
+
+enum TransactionType {
+  PlatformFee
+  ReferralFee
+  CreatorEarnings
+}
+
+enum TransactionStatus {
+  Pending
+  InProgress
+  AwaitingPayout
+  Processed
+  Failed
+}
+
+enum PayoutStatus {
+  Paid
+  Pending
+  InTransit
+  Canceled
+  Failed
+}

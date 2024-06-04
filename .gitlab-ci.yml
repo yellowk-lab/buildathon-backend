@@ -1,0 +1,122 @@
+image: docker:latest
+
+services:
+  - docker:dind
+  - digitalocean/doctl
+
+stages:
+  - install-dependencies
+  - pre-release
+  - release
+  - deploy
+
+variables:
+  CACHE_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+  # Develop
+  DEV_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA-DEV
+  DATABASE_URL_DEV: $DATABASE_URL_DEV
+
+  # Uat
+  UAT_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA-UAT
+  DATABASE_URL_UAT: $DATABASE_URL_UAT
+
+  # Production
+  PROD_IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA-PROD
+  DATABASE_URL_PROD: $DATABASE_URL_PROD
+
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+install-dependencies:
+  stage: install-dependencies
+  script:
+    - docker pull $CACHE_IMAGE || true
+    - docker build --target build --cache-from $CACHE_IMAGE -t $CACHE_IMAGE .
+    - docker push $CACHE_IMAGE
+  only:
+    changes:
+      - package-lock.json
+
+#################################
+# DEVELOP
+#################################
+
+release-develop-image:
+  stage: release
+  script:
+    - docker build --pull --cache-from $CACHE_IMAGE -t $DEV_IMAGE_TAG . --build-arg DATABASE_URL_BUILD=$DATABASE_URL_DEV
+    - docker push $DEV_IMAGE_TAG
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+deploy-develop-image:
+  stage: deploy
+  variables:
+    DEPLOY_DEV_IMAGE_TAG: $DIGITALOCEAN_REGISTRY/$IMAGE_NAME/dev:latest
+  script:
+    - docker pull $DEV_IMAGE_TAG
+    - docker tag $DEV_IMAGE_TAG $DEPLOY_DEV_IMAGE_TAG
+    - docker login registry.digitalocean.com --username $DIGITALOCEAN_ACCESS_TOKEN --password $DIGITALOCEAN_ACCESS_TOKEN
+    - docker push $DEPLOY_DEV_IMAGE_TAG
+    - docker run --env=DIGITALOCEAN_ACCESS_TOKEN=$DIGITALOCEAN_ACCESS_TOKEN digitalocean/doctl apps create-deployment $DIGITALOCEAN_DEV_APP_ID
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+#################################
+# UAT
+#################################
+
+release-uat-image:
+  stage: release
+  script:
+    - docker build --pull --cache-from $CACHE_IMAGE -t $UAT_IMAGE_TAG . --build-arg DATABASE_URL_BUILD=$DATABASE_URL_UAT
+    - docker push $UAT_IMAGE_TAG
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+deploy-uat-image:
+  stage: deploy
+  variables:
+    DEPLOY_UAT_IMAGE_TAG: $DIGITALOCEAN_REGISTRY/$IMAGE_NAME/uat:latest
+  script:
+    - docker pull $UAT_IMAGE_TAG
+    - docker tag $UAT_IMAGE_TAG $DEPLOY_UAT_IMAGE_TAG
+    - docker login registry.digitalocean.com --username $DIGITALOCEAN_ACCESS_TOKEN --password $DIGITALOCEAN_ACCESS_TOKEN
+    - docker push $DEPLOY_UAT_IMAGE_TAG
+    - docker run --env=DIGITALOCEAN_ACCESS_TOKEN=$DIGITALOCEAN_ACCESS_TOKEN digitalocean/doctl apps create-deployment $DIGITALOCEAN_UAT_APP_ID
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+#################################
+# PRODUCTION
+#################################
+
+migrate-prod-db:
+  stage: pre-release
+  script:
+    # This could be improved to run an image that is built prior, instead of building again and using args.
+    - docker build --target migration --pull --cache-from $CACHE_IMAGE -t $PROD_IMAGE_TAG . --build-arg DATABASE_URL_BUILD=$DATABASE_URL_PROD
+  rules:
+    - if: '$CI_COMMIT_TAG != null'
+release-prod-image:
+
+  stage: release
+  script:
+    - docker build --pull --cache-from $CACHE_IMAGE -t $PROD_IMAGE_TAG . --build-arg DATABASE_URL_BUILD=$DATABASE_URL_PROD
+    - docker push $PROD_IMAGE_TAG
+  rules:
+    - if: '$CI_COMMIT_TAG != null'
+
+deploy-prod-image:
+  stage: deploy
+  variables:
+    DEPLOY_PROD_IMAGE_TAG: $DIGITALOCEAN_REGISTRY/$IMAGE_NAME/prod:latest
+  script:
+    - docker pull $PROD_IMAGE_TAG
+    - docker tag $PROD_IMAGE_TAG $DEPLOY_PROD_IMAGE_TAG
+    - docker login registry.digitalocean.com --username $DIGITALOCEAN_ACCESS_TOKEN --password $DIGITALOCEAN_ACCESS_TOKEN
+    - docker push $DEPLOY_PROD_IMAGE_TAG
+    - docker run --env=DIGITALOCEAN_ACCESS_TOKEN=$DIGITALOCEAN_ACCESS_TOKEN digitalocean/doctl apps create-deployment $DIGITALOCEAN_PROD_APP_ID
+  rules:
+    - if: '$CI_COMMIT_TAG != null'
