@@ -9,7 +9,7 @@ import { MailService } from '../mail/mail.service';
 export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
-    private readonly emailService: MailService
+    private readonly emailService: MailService,
   ) {}
 
   @Mutation(() => User, { name: 'prizeDrawRegistration' })
@@ -18,7 +18,7 @@ export class UsersResolver {
       throw new UsersFieldError(
         UsersFieldError.EMAIL_CODES.INVALID_FORMAT,
         'Please provide a valid email address',
-        { email: 'Invalid format' }
+        { email: 'Invalid format' },
       );
     }
     const emailLowerCase = email.toLowerCase();
@@ -27,7 +27,7 @@ export class UsersResolver {
       await this.emailService.sendPrizeDrawRegistration(userExists.email);
       const updatedUser = await this.usersService.updateDrawPrizeRegsitered(
         userExists.id,
-        true
+        true,
       );
       return updatedUser;
     }

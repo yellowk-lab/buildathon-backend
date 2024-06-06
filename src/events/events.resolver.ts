@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 export class EventsResolver {
   constructor(
     private readonly eventsService: EventsService,
-    readonly configService: ConfigService
+    readonly configService: ConfigService,
   ) {}
 
   @Mutation(() => Event)
@@ -18,18 +18,18 @@ export class EventsResolver {
     if (password !== this.configService.get<string>('PASSWORD')) {
       throw new EventsError(
         EventsError.FORBIDDEN,
-        'Access denied: Wrong password'
+        'Access denied: Wrong password',
       );
     }
     const { start, end } = this.eventsService.getVerifiedDates(
       startDate,
-      endDate
+      endDate,
     );
     return await this.eventsService.createEvent(
       start,
       end,
       lootsDistribution,
-      name
+      name,
     );
   }
 

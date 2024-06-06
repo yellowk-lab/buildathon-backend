@@ -83,7 +83,7 @@ export class LootsService {
 
   async updateCirculatingSupply(
     lootId: number,
-    circulatingSupply: number
+    circulatingSupply: number,
   ): Promise<Loot> {
     const updatedLoot = await this.prisma.loot.update({
       where: { id: lootId },
@@ -94,7 +94,7 @@ export class LootsService {
 
   async verifyDistributionAvailability(
     loot: Loot,
-    quantity: number
+    quantity: number,
   ): Promise<boolean> {
     const computedSupply = await this.computeCirculatingSupply(loot);
     return computedSupply >= quantity;

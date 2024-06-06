@@ -44,7 +44,7 @@ export class UsersService {
 
   async createUser(
     email: string,
-    drawPrizeRegistered?: boolean
+    drawPrizeRegistered?: boolean,
   ): Promise<User> {
     const user = await this.prisma.user.create({
       data: { email, drawPrizeRegistered },
@@ -52,10 +52,9 @@ export class UsersService {
     return User.create(user);
   }
 
-  
   async updateDrawPrizeRegsitered(
     userId: number,
-    drawPrizeRegistered: boolean
+    drawPrizeRegistered: boolean,
   ): Promise<User> {
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },

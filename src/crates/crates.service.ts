@@ -26,10 +26,7 @@ export class CratesService {
       });
       return Crate.create(crate);
     } catch (error) {
-      throw new CratesError(
-        CratesError.NOT_FOUND,
-        'Crate not found'
-      );
+      throw new CratesError(CratesError.NOT_FOUND, 'Crate not found');
     }
   }
 
@@ -42,7 +39,7 @@ export class CratesService {
   }
 
   async findClosestToTargetCoordinate(
-    targetCoordinate: GeographicCoordinate
+    targetCoordinate: GeographicCoordinate,
   ): Promise<Crate | null> {
     const allCrates = await this.findAll();
     if (allCrates.length === 0) {
@@ -66,10 +63,7 @@ export class CratesService {
     return closestCrate;
   }
 
-  async assignQRCode(
-    crateId: number,
-    qrCodeId: number
-  ): Promise<Crate> {
+  async assignQRCode(crateId: number, qrCodeId: number): Promise<Crate> {
     await this.prisma.qRCode.update({
       where: { id: qrCodeId },
       data: {

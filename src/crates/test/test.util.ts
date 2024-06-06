@@ -28,9 +28,7 @@ export const GET_CRATE = gql`
   }
 `;
 
-export function generateFakeCrate(
-  overrides?: Partial<Crate>
-): Crate {
+export function generateFakeCrate(overrides?: Partial<Crate>): Crate {
   const crate: Crate = {
     id: faker.number.int({ min: 1, max: 10000000 }),
     positionName: faker.location.street().toUpperCase(),

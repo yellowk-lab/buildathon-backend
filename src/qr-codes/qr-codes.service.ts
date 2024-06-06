@@ -53,7 +53,7 @@ export class QRCodesService {
 
   async registerScanEvent(
     qrCodeId: number,
-    coordinate: GeographicCoordinate
+    coordinate: GeographicCoordinate,
   ): Promise<QRScanEvent> {
     const qrScanEvent = await this.prisma.qRScanEvent.create({
       data: {

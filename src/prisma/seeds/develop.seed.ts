@@ -31,7 +31,7 @@ export const main = async () => {
         latitude: parseFloat(crate.Latitude),
         longitude: parseFloat(crate.Longitude),
         qrCodeId: Math.random() > 0.5 ? i + 1 : null,
-      }))
+      })),
     );
     await prisma.lootBox.deleteMany();
     const createdEvents = await seedTable('event', [
@@ -46,7 +46,7 @@ export const main = async () => {
       createdLoots,
       3200,
       1000,
-      createdEvents[0]?.id
+      createdEvents[0]?.id,
     );
     const createdLootBoxes = await seedTable('lootBox', lootBoxes, false);
     for (let i = 0; i < createdQRCodes.length; i++) {
@@ -73,7 +73,7 @@ const seedTable = async (
   name: string,
   data: any,
   isSequence = true,
-  sequenceStartAt = 1
+  sequenceStartAt = 1,
 ) => {
   await prisma[name].deleteMany();
   console.log(`Deleted records in ${name} table`);
@@ -108,7 +108,7 @@ function generateLootBoxes(
   loots: Loot[],
   totalBoxes: number,
   boxesWithLoot: number,
-  eventId: string | number
+  eventId: string | number,
 ): LootBox[] {
   // Randomly select which boxes get a loot
   const lootIndices = new Set<number>();

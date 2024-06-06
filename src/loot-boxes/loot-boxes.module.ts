@@ -9,7 +9,6 @@ import { CratesService } from '../crates/crates.service';
 import { EventsModule } from '../events/events.module';
 import { CratesModule } from '../crates/crates.module';
 
-
 @Module({
   imports: [EventsModule, CratesModule],
   providers: [
@@ -19,7 +18,7 @@ import { CratesModule } from '../crates/crates.module';
     LootsService,
     EventsService,
     QRCodesService,
-    CratesService
+    CratesService,
   ],
   exports: [LootBoxesService, LootsService],
 })

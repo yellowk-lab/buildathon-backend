@@ -30,7 +30,7 @@ export class Loot {
     name: string,
     displayName: string,
     totalSupply: number,
-    circulatingSupply: number
+    circulatingSupply: number,
   ) {
     this.id = id;
     this.name = name;
@@ -45,7 +45,7 @@ export class Loot {
       loot.name,
       loot.displayName,
       loot.totalSupply,
-      loot.circulatingSupply
+      loot.circulatingSupply,
     );
     return newLoot;
   }

@@ -29,13 +29,13 @@ export class LootBoxesResolver {
     private lootsService: LootsService,
     private eventsService: EventsService,
     private qrCodesService: QRCodesService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {}
 
   @UsePipes(new ValidationPipe({ transform: true }))
   @Mutation(() => LootBox, { name: 'scanLootBoxQRCode' })
   async searchLootBoxFromQRCodeScan(
-    @Args('scanInput') scanInput: ScanQRCodeInput
+    @Args('scanInput') scanInput: ScanQRCodeInput,
   ) {
     const { latitude, longitude, hash } = scanInput;
     const qrCode = await this.qrCodesService.findUniqueByHash(hash);
@@ -44,7 +44,7 @@ export class LootBoxesResolver {
     const onGoingEvent = await this.eventsService.getOnGoingEvent();
     const lootBox = await this.lootBoxesService.getByQRCodeAndEvent(
       qrCode.id,
-      onGoingEvent.id
+      onGoingEvent.id,
     );
     if (lootBox) {
       if (lootBox.isOpened) {
@@ -53,14 +53,14 @@ export class LootBoxesResolver {
         const updatedLootBox = await this.lootBoxesService.scanAndfoundProcess(
           lootBox,
           coordinate,
-          qrCode
+          qrCode,
         );
         return updatedLootBox;
       }
     } else {
       const emptyLoot = await this.lootBoxesService.createLootBox(
         onGoingEvent.id,
-        qrCode.id
+        qrCode.id,
       );
       return emptyLoot;
     }
@@ -72,7 +72,7 @@ export class LootBoxesResolver {
     const onGoingEvent = await this.eventsService.getOnGoingEvent();
     return await this.lootBoxesService.getByQRCodeAndEvent(
       qrCode.id,
-      onGoingEvent.id
+      onGoingEvent.id,
     );
   }
 
@@ -90,7 +90,7 @@ export class LootBoxesResolver {
       throw new LootBoxesFieldsError(
         LootBoxesFieldsError.EMAIL_CODES.INVALID_FORMAT,
         'Please provide a valid email address',
-        { email: 'Invalid format' }
+        { email: 'Invalid format' },
       );
     }
     const emailLowerCase = email.toLowerCase();
@@ -102,7 +102,7 @@ export class LootBoxesResolver {
     if (password !== this.configService.get<string>('PASSWORD')) {
       throw new LootBoxesError(
         LootBoxesError.FORBIDDEN,
-        'Access denied: Wrong password'
+        'Access denied: Wrong password',
       );
     }
     const removedLoots =
@@ -116,7 +116,7 @@ export class LootBoxesResolver {
     if (password !== this.configService.get<string>('PASSWORD')) {
       throw new LootsError(
         LootsError.FORBIDDEN,
-        'Access denied: Wrong password'
+        'Access denied: Wrong password',
       );
     }
 
