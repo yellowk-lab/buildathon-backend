@@ -15,14 +15,8 @@ import { CoreModule } from './core/core.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { DigitalOceanModule } from './digital-ocean/digital-ocean.module';
-import { PaymentModule } from './payment/payment.module';
-import { ProductsModule } from './products/products.module';
 import { MomentModule } from './core/moment/moment.module';
-import { StripeModule } from './payment/stripe/stripe.module';
-import { SalesModule } from './sales/sales.module';
 import { authDirectiveTransformer } from './auth/directives/auth.directive';
-import { TransactionsModule } from './transactions/transactions.module';
-import { FeesModule } from './fees/fees.module';
 
 interface ExceptionType extends GraphQLErrorExtensions {
   status?: string | undefined;
@@ -73,16 +67,10 @@ interface ExceptionType extends GraphQLErrorExtensions {
     }),
     PrismaModule,
     MomentModule,
-    StripeModule,
     CoreModule,
     UsersModule,
     DigitalOceanModule,
-    PaymentModule,
-    ProductsModule,
-    SalesModule,
     AuthModule,
-    TransactionsModule,
-    FeesModule,
   ],
 })
 export class AppModule {}
