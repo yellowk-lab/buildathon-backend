@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { GraphQLModule } from '@nestjs/graphql';
-import {
-  DirectiveLocation,
-  GraphQLDirective,
-  GraphQLError,
-  GraphQLErrorExtensions,
-} from 'graphql';
+import { GraphQLError, GraphQLErrorExtensions } from 'graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { PrismaModule } from './prisma/prisma.module';
 import { CoreModule } from './core/core.module';
 import { UsersModule } from './users/users.module';
 import { MomentModule } from './core/moment/moment.module';
+import { LootBoxesModule } from './loot-boxes/loot-boxes.module';
+import { HttpModule } from './http/http.module';
+import { QRCodesModule } from './qr-codes/qr-codes.module';
+import { MailModule } from './mail/mail.module';
+import { EventsModule } from './events/events.module';
+import { CratesModule } from './crates/crates.module';
 
 interface ExceptionType extends GraphQLErrorExtensions {
   status?: string | undefined;
@@ -21,7 +21,6 @@ interface ExceptionType extends GraphQLErrorExtensions {
 
 @Module({
   imports: [
-    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -33,14 +32,6 @@ interface ExceptionType extends GraphQLErrorExtensions {
       },
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
-      buildSchemaOptions: {
-        directives: [
-          new GraphQLDirective({
-            name: 'auth',
-            locations: [DirectiveLocation.FIELD_DEFINITION],
-          }),
-        ],
-      },
       formatError: (error: GraphQLError) => {
         if (!error.extensions.exception) {
           return error;
@@ -65,6 +56,12 @@ interface ExceptionType extends GraphQLErrorExtensions {
     MomentModule,
     CoreModule,
     UsersModule,
+    LootBoxesModule,
+    HttpModule,
+    QRCodesModule,
+    MailModule,
+    EventsModule,
+    CratesModule,
   ],
 })
 export class AppModule {}

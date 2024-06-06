@@ -1,133 +1,66 @@
-import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User, Prisma } from '@prisma/client';
-import { UserError } from './users.errors';
-import { secureNameGenerator } from '../common/utils/string.util';
-import RegisterInput from '../auth/dto/register.input';
-import { FeesService } from '../fees/fees.service';
+import { Injectable } from '@nestjs/common';
+import { User } from './entities/user.entity';
+import { UsersError } from './users.error';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    readonly prisma: PrismaService,
-    private readonly feesService: FeesService,
-  ) {}
-
-  async findOneById(id: string): Promise<User> {
-    try {
-      return await this.prisma.user.findUniqueOrThrow({
-        where: { id },
-      });
-    } catch (error) {
-      throw new UserError(UserError.NOT_FOUND, 'User not found');
-    }
-  }
+  constructor(readonly prisma: PrismaService) {}
 
   async findByEmail(email: string): Promise<User> {
     try {
-      return await this.prisma.user.findUniqueOrThrow({
-        where: { email: email.toLowerCase() },
+      const user = await this.prisma.user.findUniqueOrThrow({
+        where: { email },
       });
+      return User.create(user);
     } catch (error) {
-      throw new UserError(
-        UserError.NOT_FOUND,
-        `User not found for email ${email}`,
-      );
+      throw new UsersError(UsersError.NOT_FOUND, 'User not found');
     }
   }
 
-  async getOneById(id: string): Promise<User | null> {
+  async findOneById(id: number): Promise<User> {
+    try {
+      const user = await this.prisma.user.findUniqueOrThrow({ where: { id } });
+      return User.create(user);
+    } catch (error) {
+      throw new UsersError(UsersError.NOT_FOUND, 'User not found');
+    }
+  }
+
+  async getOneById(id: number): Promise<User | null> {
     try {
       return await this.findOneById(id);
     } catch (error) {
       return null;
     }
   }
-
-  async findByReferralCode(referralCode: string): Promise<User> {
+  async getOneByEmail(email: string): Promise<User | null> {
     try {
-      return await this.prisma.user.findUniqueOrThrow({
-        where: { referralCode },
-      });
+      return await this.findByEmail(email);
     } catch (error) {
-      throw new UserError(UserError.NOT_FOUND, 'User not found');
+      return null;
     }
   }
 
-  async generateUniqueReferralCode(): Promise<string> {
-    let isHashUnique = false;
-    let generatedCode: string = secureNameGenerator(null, 20);
-    while (!isHashUnique) {
-      const product = await this.prisma.user.findUnique({
-        where: { referralCode: generatedCode },
-      });
-      if (!product) {
-        isHashUnique = true;
-      } else {
-        generatedCode = secureNameGenerator(null, 20);
-      }
-    }
-    return generatedCode;
-  }
-
-  async registerWithVerificationAndReferral(
-    data: RegisterInput,
+  async createUser(
+    email: string,
+    drawPrizeRegistered?: boolean
   ): Promise<User> {
-    const { tosAccepted, referrerCode, country, email, firstName } = data;
-    if (!tosAccepted) {
-      throw new UserError(
-        UserError.USER_CREATION,
-        'User must accept terms of services to register',
-      );
-    }
-    let referrerId = null,
-      referrerFeeId = null;
-
-    try {
-      const referrer = await this.findByReferralCode(referrerCode);
-      const referrerFee = await this.feesService.findFirstReferralFee();
-      referrerId = referrer.id;
-      referrerFeeId = referrerFee.id;
-    } finally {
-      try {
-        const referralCode = await this.generateUniqueReferralCode();
-        return await this.prisma.user.create({
-          data: {
-            email: email.toLowerCase(),
-            firstName,
-            country,
-            tosAccepted,
-            referralCode,
-            referrerId,
-            referrerFeeId,
-          },
-        });
-      } catch (error) {
-        throw new UserError(
-          UserError.USER_CREATION,
-          `User with email '${email} could not be created.`,
-        );
-      }
-    }
-  }
-
-  async findUnique(
-    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
-    includeOptions?: Prisma.UserInclude,
-  ): Promise<User> {
-    return await this.prisma.user.findUnique({
-      where: userWhereUniqueInput,
-      include: includeOptions,
+    const user = await this.prisma.user.create({
+      data: { email, drawPrizeRegistered },
     });
+    return User.create(user);
   }
 
-  async update(
-    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
-    updateInput: Prisma.UserUpdateInput,
+  
+  async updateDrawPrizeRegsitered(
+    userId: number,
+    drawPrizeRegistered: boolean
   ): Promise<User> {
-    return await this.prisma.user.update({
-      where: userWhereUniqueInput,
-      data: updateInput,
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { drawPrizeRegistered },
     });
+    return User.create(updatedUser);
   }
 }
