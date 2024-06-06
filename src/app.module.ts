@@ -13,10 +13,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { PrismaModule } from './prisma/prisma.module';
 import { CoreModule } from './core/core.module';
 import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { DigitalOceanModule } from './digital-ocean/digital-ocean.module';
 import { MomentModule } from './core/moment/moment.module';
-import { authDirectiveTransformer } from './auth/directives/auth.directive';
 
 interface ExceptionType extends GraphQLErrorExtensions {
   status?: string | undefined;
@@ -36,7 +33,6 @@ interface ExceptionType extends GraphQLErrorExtensions {
       },
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
-      transformSchema: (schema) => authDirectiveTransformer(schema, 'auth'),
       buildSchemaOptions: {
         directives: [
           new GraphQLDirective({
@@ -69,8 +65,6 @@ interface ExceptionType extends GraphQLErrorExtensions {
     MomentModule,
     CoreModule,
     UsersModule,
-    DigitalOceanModule,
-    AuthModule,
   ],
 })
 export class AppModule {}
