@@ -26,7 +26,7 @@ export class EventsService {
       const event = await this.prisma.event.findUniqueOrThrow({
         where: { id },
       });
-      return Event.create(event);
+      return Event.create(event, this.momentService);
     } catch (error) {
       throw new EventsError(EventsError.NOT_FOUND, 'Event not found');
     }
@@ -47,11 +47,11 @@ export class EventsService {
       const event = await this.prisma.event.findFirstOrThrow({
         where: { startDate: { gt: now } },
       });
-      return Event.create(event);
+      return Event.create(event, this.momentService);
     } catch (error) {
       throw new EventsError(
         EventsError.NOT_FOUND,
-        'There is no current of futur event at the moment.',
+        'No new events are currently planned.',
       );
     }
   }
@@ -63,7 +63,7 @@ export class EventsService {
       const event = await this.prisma.event.findFirstOrThrow({
         where: { startDate: { lte: now }, endDate: { gte: now } },
       });
-      return Event.create(event);
+      return Event.create(event, this.momentService);
     } catch (error) {
       throw new EventsError(
         EventsError.NOT_FOUND,
@@ -136,7 +136,7 @@ export class EventsService {
       qrCodeIndex++;
     }
 
-    return Event.create(event);
+    return Event.create(event, this.momentService);
   }
 
   getVerifiedDates(

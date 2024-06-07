@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { crates } from './crates-geolocations';
 import { hashes } from './qr-code-hashes';
+import * as moment from 'moment';
 import { loots } from './loots';
 import { UniqueEnforcer } from 'enforce-unique';
 import _ from 'lodash';
@@ -34,35 +34,40 @@ export const main = async () => {
     }
     await seedTable('crate', fakerCrates);
     await prisma.lootBox.deleteMany();
+    moment.locale('en');
+    const now = moment.now();
     const createdEvents = await seedTable('event', [
       {
-        name: 'Test Event',
-        startDate: new Date(),
-        endDate: new Date('June 14, 2024 23:59:59'),
+        name: 'Base On Chain Summer',
+        startDate: moment(now).toDate(),
+        endDate: moment(now).add(7, 'd').toDate(),
+      },
+      {
+        name: 'Futur Event',
+        startDate: moment(now).add(7, 'd').toDate(),
+        endDate: moment(now).add(8, 'd').toDate(),
       },
     ]);
     const createdLoots = await seedTable('loot', loots);
     const lootBoxes = generateLootBoxes(
       createdLoots,
-      200,
+      createdQRCodes.length,
       50,
       createdEvents[0]?.id,
     );
     const createdLootBoxes = await seedTable('lootBox', lootBoxes, false);
-    console.log(createdLootBoxes[0]);
+    let qrCodeErrorCounter = 0;
+    let lootBoxErrorCounter = 0;
     for (let i = 0; i < createdQRCodes.length; i++) {
       if (!createdQRCodes[i] || createdQRCodes[i].id === undefined) {
-        console.error('Invalid QRCode object at index', i, createdQRCodes[i]);
+        qrCodeErrorCounter++;
         continue;
       }
       if (!createdLootBoxes[i] || createdLootBoxes[i].id === undefined) {
-        console.error(
-          'Invalid LootBox object at index',
-          i,
-          createdLootBoxes[i],
-        );
+        lootBoxErrorCounter++;
         continue;
       }
+
       await prisma.qRCode.update({
         where: {
           id: createdQRCodes[i].id,
@@ -74,6 +79,12 @@ export const main = async () => {
         },
       });
     }
+    console.log(
+      `Encountered ${qrCodeErrorCounter} errors with QR Code,\nTotal qr codes is ${createdQRCodes.length}`,
+    );
+    console.log(
+      `Encountered ${lootBoxErrorCounter} errors with Lootbox,\nTotal lootboxes is ${createdLootBoxes.length}`,
+    );
   } catch (error) {
     console.error(error);
     process.exit(1);
