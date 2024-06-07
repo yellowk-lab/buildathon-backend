@@ -22,34 +22,47 @@ export const main = async () => {
     }
     const totalUsers = await prisma.user.createMany({ data: users });
     console.log(`Created ${totalUsers.count} users`);
-
-    await seedTable(
-      'crate',
-      crates?.map((crate, i) => ({
-        address: crate.Address,
-        positionName: crate.PositionName,
-        latitude: parseFloat(crate.Latitude),
-        longitude: parseFloat(crate.Longitude),
-        qrCodeId: Math.random() > 0.5 ? i + 1 : null,
-      })),
-    );
+    let fakerCrates = [];
+    const randomCrates = faker.number.int({ min: 300, max: 1000 });
+    for (let i = 0; i < randomCrates; i++) {
+      fakerCrates.push({
+        address: faker.location.streetAddress(true),
+        latitude: faker.location.latitude(),
+        longitude: faker.location.longitude(),
+        positionName: faker.lorem.sentence({ min: 2, max: 4 }),
+      });
+    }
+    await seedTable('crate', fakerCrates);
     await prisma.lootBox.deleteMany();
     const createdEvents = await seedTable('event', [
       {
         name: 'Test Event',
         startDate: new Date(),
-        endDate: new Date('December 31, 2023 23:59:59'),
+        endDate: new Date('June 14, 2024 23:59:59'),
       },
     ]);
     const createdLoots = await seedTable('loot', loots);
     const lootBoxes = generateLootBoxes(
       createdLoots,
-      3200,
-      1000,
+      200,
+      50,
       createdEvents[0]?.id,
     );
     const createdLootBoxes = await seedTable('lootBox', lootBoxes, false);
+    console.log(createdLootBoxes[0]);
     for (let i = 0; i < createdQRCodes.length; i++) {
+      if (!createdQRCodes[i] || createdQRCodes[i].id === undefined) {
+        console.error('Invalid QRCode object at index', i, createdQRCodes[i]);
+        continue;
+      }
+      if (!createdLootBoxes[i] || createdLootBoxes[i].id === undefined) {
+        console.error(
+          'Invalid LootBox object at index',
+          i,
+          createdLootBoxes[i],
+        );
+        continue;
+      }
       await prisma.qRCode.update({
         where: {
           id: createdQRCodes[i].id,

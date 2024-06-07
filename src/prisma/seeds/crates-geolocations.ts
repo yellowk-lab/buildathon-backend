@@ -1,1 +1,8 @@
-export const crates = [];
+export const crates = [
+  {
+    Address: '',
+    Latitude: '',
+    Longitude: '',
+    PositionName: '',
+  },
+];
