@@ -22,7 +22,7 @@ export const main = async () => {
     }
     const totalUsers = await prisma.user.createMany({ data: users });
     console.log(`Created ${totalUsers.count} users`);
-    let fakerCrates = [];
+    const fakerCrates = [];
     const randomCrates = faker.number.int({ min: 300, max: 1000 });
     for (let i = 0; i < randomCrates; i++) {
       fakerCrates.push({
