@@ -21,13 +21,10 @@ export class EventsResolver {
         'Access denied: Wrong password',
       );
     }
-    const { start, end } = this.eventsService.getVerifiedDates(
+
+    return await this.eventsService.createEvent(
       startDate,
       endDate,
-    );
-    return await this.eventsService.createEvent(
-      start,
-      end,
       lootsDistribution,
       name,
     );

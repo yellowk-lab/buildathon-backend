@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { LootBox } from './entities/loot-box.entity';
 import { MomentService } from '../core/moment/moment.service';
 import {
@@ -11,7 +11,6 @@ import {
 import { QRCode } from '../qr-codes/entities/qr-code.entity';
 import { CratesService } from '../crates/crates.service';
 import { LootBoxesError } from './loot-boxes.error';
-import { EventsService } from '../events/events.service';
 import { LootsService } from './loots/loots.service';
 import { LootsError } from './loots/loots.error';
 
@@ -20,8 +19,6 @@ export class LootBoxesService {
   constructor(
     readonly prisma: PrismaService,
     private cratesService: CratesService,
-    @Inject(forwardRef(() => EventsService))
-    private eventsService: EventsService,
     private emailService: MailService,
     private lootsService: LootsService,
     private configService: ConfigService,

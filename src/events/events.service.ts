@@ -85,11 +85,15 @@ export class EventsService {
   }
 
   async createEvent(
-    start: Moment,
-    end: Moment,
+    startDate: Date,
+    endDate: Date,
     lootsDistribution: LootDistribution[],
     name?: string,
   ): Promise<Event> {
+    const { start, end } = this.getVerifiedDates(
+      startDate,
+      endDate,
+    );
     const event = await this.prisma.event.create({
       data: {
         startDate: start.toDate(),

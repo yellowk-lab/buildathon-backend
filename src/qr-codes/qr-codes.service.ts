@@ -2,9 +2,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { QRCode } from './entities/qr-code.entity';
 import { QRCodesError } from './qr-codes.error';
-import { shuffleArray } from '../common/utils/shuffle.util';
 import { QRScanEvent } from './entities/qr-scan-event.entity';
 import { GeographicCoordinate } from '../common/utils/geolocalisation.util';
+import { shuffleArray } from '../common/utils/shuffle.util';
 
 @Injectable()
 export class QRCodesService {

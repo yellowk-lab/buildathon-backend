@@ -51,7 +51,6 @@
   },
   "devDependencies": {
     "@css-inline/css-inline": "^0.14.1",
-    "@css-inline/css-inline-linux-x64-gnu": "^0.14.1",
     "@faker-js/faker": "^8.3.1",
     "@nestjs-modules/mailer": "^2.0.0",
     "@nestjs/cli": "^10.0.0",
