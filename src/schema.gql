@@ -2,72 +2,113 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-directive @auth on FIELD_DEFINITION
-
-input CreateProductInput {
-  currency: String!
-  expiresAt: Timestamp
-  fileStorageHash: String!
-  name: String
-  price: Int!
+input ClaimLootBoxInput {
+  email: String!
+  lootBoxId: String!
 }
 
-type FileUploadPayload {
-  fileStorageHash: String!
-  uploadURL: String!
+type Crate {
+  address: String!
+  id: Int!
+  latitude: Float!
+  longitude: Float!
+  positionName: String!
+  qrCode: QRCode
+  qrCodeId: Int
+}
+
+input CreateEventInput {
+  endDate: Timestamp!
+  lootsDistribution: [LootDistribution!]!
+  name: String
+  password: String!
+  startDate: Timestamp!
+}
+
+type Event {
+  endDate: Timestamp!
+  id: Int!
+  lootBoxes: [LootBox!]
+  name: String
+  startDate: Timestamp!
+}
+
+type Loot {
+  circulatingSupply: Int!
+  claimedSupply: Int
+  displayName: String!
+  id: Int!
+  lootBoxes: [LootBox!]
+  name: String!
+  totalSupply: Int!
+}
+
+type LootBox {
+  dateOpened: Timestamp
+  event: Event
+  eventId: Int!
+  id: ID!
+  isOpened: Boolean!
+  loot: Loot
+  lootId: Int
+  openedBy: User
+  openedById: Int
+  qrCode: QRCode
+  qrCodeId: Int
+}
+
+input LootDistribution {
+  amount: Int!
+  name: String!
 }
 
 type Mutation {
-  buyProduct(productId: String!): String!
-  cashoutFunds: Timestamp!
-  createProduct(input: CreateProductInput!): Product!
-  increaseClick(productId: String!): Boolean!
-  register(input: RegisterInput!, token: String!): User!
-  signIn(token: String!): User!
-  signOut: Boolean!
-  testCashout(userId: String!): Timestamp!
+  claimLootBox(claimInput: ClaimLootBoxInput!): LootBox!
+  createEvent(createEventInput: CreateEventInput!): Event!
+  prizeDrawRegistration(email: String!): User!
+  removeUnusedLootBoxes(password: String!): String!
+  scanLootBoxQRCode(scanInput: ScanQRCodeInput!): LootBox!
+  sendWinEmail(sendWinEmailInput: SendWinEmailInput!): String!
 }
 
-type Product {
-  clickCount: Int!
-  createdAt: Timestamp!
-  creator: User!
-  creatorId: ID!
-  currency: String!
-  earnings: Int!
-  expiredAt: Timestamp
-
-  """unique identifier"""
-  id: ID!
-  name: String!
-  price: Int!
-  salesCount: Int!
-  stripeProductId: String!
+type QRCode {
+  crate: Crate
+  crateId: Int
+  id: Int!
+  lootBoxes: [LootBox!]
+  scanHistory: [QRScanEvent!]
 }
 
-type ProductPrices {
-  creatorPrice: Int!
-  finalPrice: Int!
+type QRScanEvent {
+  date: Timestamp!
+  id: Int!
+  latitude: Float
+  longitude: Float
+  qrCode: QRCode!
+  qrCodeId: Int!
 }
 
 type Query {
-  authenticatedUser: User!
-  calculateFinalPrice(price: Int!): ProductPrices!
-  isEmailRegistered(email: String!): Boolean!
-  product(id: ID!): Product!
-  productDownloadUrl(paymentIntentId: String!, productId: String!): String!
-  productUploadUrl: FileUploadPayload!
-  products(skip: Int! = 0, take: Int! = 100): [Product!]!
-  stripeOnboardingUrl: String!
-  userBalance: UserBalance!
+  crate(id: Int!): Crate!
+  crates(skip: Int, take: Int): [Crate!]!
+  loot(id: Int!): Loot!
+  lootBoxByHash(hash: String!): LootBox!
+  loots: [Loot!]!
+  lootsTotalSupply: Int!
+  totalUnclaimedLoots: Int!
+  upcomingEvent: Event!
 }
 
-input RegisterInput {
-  country: String!
+input ScanQRCodeInput {
+  hash: String!
+  latitude: Float!
+  longitude: Float!
+}
+
+input SendWinEmailInput {
   email: String!
-  firstName: String!
-  referrerCode: String
-  tosAccepted: Boolean!
+  lootName: String!
+  password: String!
 }
 
 """
@@ -76,20 +117,8 @@ input RegisterInput {
 scalar Timestamp
 
 type User {
-  country: String!
+  drawPrizeRegistered: Boolean!
   email: String!
-  firstName: String!
-
-  """unique identifier"""
-  id: ID!
-  lastName: String
-  referralCode: String!
-}
-
-type UserBalance {
-  currency: String!
-  currentPayableAmount: Int!
-  futurePayableAmount: Int!
-  stripeFees: Int!
-  totalAmountPayable: Int!
+  id: Int!
+  openedLootBoxes: [LootBox!]
 }

@@ -1,28 +1,19 @@
 import { Module } from '@nestjs/common';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { GraphQLModule } from '@nestjs/graphql';
-import {
-  DirectiveLocation,
-  GraphQLDirective,
-  GraphQLError,
-  GraphQLErrorExtensions,
-} from 'graphql';
+import { GraphQLError, GraphQLErrorExtensions } from 'graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { PrismaModule } from './prisma/prisma.module';
 import { CoreModule } from './core/core.module';
 import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { DigitalOceanModule } from './digital-ocean/digital-ocean.module';
-import { PaymentModule } from './payment/payment.module';
-import { ProductsModule } from './products/products.module';
 import { MomentModule } from './core/moment/moment.module';
-import { StripeModule } from './payment/stripe/stripe.module';
-import { SalesModule } from './sales/sales.module';
-import { authDirectiveTransformer } from './auth/directives/auth.directive';
-import { TransactionsModule } from './transactions/transactions.module';
-import { FeesModule } from './fees/fees.module';
+import { LootBoxesModule } from './loot-boxes/loot-boxes.module';
+import { HttpModule } from './http/http.module';
+import { QRCodesModule } from './qr-codes/qr-codes.module';
+import { MailModule } from './mail/mail.module';
+import { EventsModule } from './events/events.module';
+import { CratesModule } from './crates/crates.module';
 
 interface ExceptionType extends GraphQLErrorExtensions {
   status?: string | undefined;
@@ -30,7 +21,6 @@ interface ExceptionType extends GraphQLErrorExtensions {
 
 @Module({
   imports: [
-    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -42,15 +32,6 @@ interface ExceptionType extends GraphQLErrorExtensions {
       },
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
-      transformSchema: (schema) => authDirectiveTransformer(schema, 'auth'),
-      buildSchemaOptions: {
-        directives: [
-          new GraphQLDirective({
-            name: 'auth',
-            locations: [DirectiveLocation.FIELD_DEFINITION],
-          }),
-        ],
-      },
       formatError: (error: GraphQLError) => {
         if (!error.extensions.exception) {
           return error;
@@ -73,16 +54,14 @@ interface ExceptionType extends GraphQLErrorExtensions {
     }),
     PrismaModule,
     MomentModule,
-    StripeModule,
     CoreModule,
     UsersModule,
-    DigitalOceanModule,
-    PaymentModule,
-    ProductsModule,
-    SalesModule,
-    AuthModule,
-    TransactionsModule,
-    FeesModule,
+    LootBoxesModule,
+    HttpModule,
+    QRCodesModule,
+    MailModule,
+    EventsModule,
+    CratesModule,
   ],
 })
 export class AppModule {}
