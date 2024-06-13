@@ -72,7 +72,8 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.4.5",
-    "validator": "^13.11.0"
+    "validator": "^13.11.0",
+    "viem": "^2.13.8"
   },
   "optionalDependencies": {
     "husky": "^8.0.3"
