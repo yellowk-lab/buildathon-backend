@@ -119,7 +119,7 @@ export class LootBoxesService {
     await this.web3Service.mintNFT(
       '0x667BbDACfb12A1fb59A443E0042A8D3eDbDF8e48',
       loot.name,
-      ' base-block-party'
+      ' base-block-party',
     );
 
     return claimedLootBox;

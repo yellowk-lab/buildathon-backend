@@ -7,4 +7,3 @@ export class Web3Error extends BaseError {
     super(code, message);
   }
 }
-
