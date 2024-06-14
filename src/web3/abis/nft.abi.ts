@@ -548,4 +548,4 @@ export const lootABI = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
-];
+] as const;

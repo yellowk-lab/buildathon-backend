@@ -13,6 +13,7 @@ import { LootsService } from './loots/loots.service';
 import { shuffleArray } from '@module/common/utils/shuffle.util';
 import { Loot } from './entities/loot.entity';
 import { Location } from '@module/locations/entities/location.entity';
+import { Web3Service } from '../web3/web3.service';
 
 @Injectable()
 export class LootBoxesService {
@@ -22,6 +23,7 @@ export class LootBoxesService {
     private lootsService: LootsService,
     private configService: ConfigService,
     private momentService: MomentService,
+    private web3Service: Web3Service,
   ) {}
 
   private maximalDistanceToScan =
@@ -85,34 +87,41 @@ export class LootBoxesService {
     const lootBox = await this.prisma.lootBox.findUnique({
       where: { id: lootBoxId },
     });
-    if (!lootBox) {
-      throw new LootBoxesError(
-        LootBoxesError.NOT_FOUND,
-        'The loot box can not be found',
-      );
-    }
-    if (lootBox.openedById !== null) {
-      throw new LootBoxesError(
-        LootBoxesError.ALREADY_CLAIMED,
-        'This loot box has already been claimed.',
-      );
-    }
-    const hasBeenFound = await this.hasBeenScanned(lootBoxId);
-    if (!hasBeenFound) {
-      throw new LootBoxesError(
-        LootBoxesError.FORBIDDEN,
-        'This lootbox has not been scanned yet and cannot be claimed.',
-      );
-    }
+    // if (!lootBox) {
+    //   throw new LootBoxesError(
+    //     LootBoxesError.NOT_FOUND,
+    //     'The loot box can not be found',
+    //   );
+    // }
+    // if (lootBox.openedById !== null) {
+    //   throw new LootBoxesError(
+    //     LootBoxesError.ALREADY_CLAIMED,
+    //     'This loot box has already been claimed.',
+    //   );
+    // }
+    // const hasBeenFound = await this.hasBeenScanned(lootBoxId);
+    // if (!hasBeenFound) {
+    //   throw new LootBoxesError(
+    //     LootBoxesError.FORBIDDEN,
+    //     'This lootbox has not been scanned yet and cannot be claimed.',
+    //   );
+    // }
     const claimedLootBox = await this.setAndCreateWinner(lootBoxId, email);
     const loot = await this.lootsService.getOneById(lootBox.lootId);
-    const lootImgUrl =
-      this.configService.get<string>('DOS_CDN') + '/' + loot.name + '.png';
-    await this.emailService.sendWinnerConfirmation(
-      email,
-      lootImgUrl,
-      loot.displayName,
+    // const lootImgUrl =
+    //   this.configService.get<string>('DOS_CDN') + '/' + loot.name + '.png';
+    // await this.emailService.sendWinnerConfirmation(
+    //   email,
+    //   lootImgUrl,
+    //   loot.displayName,
+    // );
+
+    await this.web3Service.mintNFT(
+      '0x667BbDACfb12A1fb59A443E0042A8D3eDbDF8e48',
+      loot.name,
+      ' base-block-party'
     );
+
     return claimedLootBox;
   }
 
