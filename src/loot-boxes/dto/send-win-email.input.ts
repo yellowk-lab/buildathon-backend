@@ -11,5 +11,8 @@ export class SendWinEmailInput {
   lootName: string;
 
   @Field(() => String)
+  eventId: string;
+
+  @Field(() => String)
   password: string;
 }

@@ -18,7 +18,7 @@ export class UsersService {
     }
   }
 
-  async findOneById(id: number): Promise<User> {
+  async findOneById(id: string): Promise<User> {
     try {
       const user = await this.prisma.user.findUniqueOrThrow({ where: { id } });
       return User.create(user);
@@ -27,7 +27,7 @@ export class UsersService {
     }
   }
 
-  async getOneById(id: number): Promise<User | null> {
+  async getOneById(id: string): Promise<User | null> {
     try {
       return await this.findOneById(id);
     } catch (error) {
@@ -53,7 +53,7 @@ export class UsersService {
   }
 
   async updateDrawPrizeRegsitered(
-    userId: number,
+    userId: string,
     drawPrizeRegistered: boolean,
   ): Promise<User> {
     const updatedUser = await this.prisma.user.update({

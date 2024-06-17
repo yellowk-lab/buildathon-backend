@@ -1,10 +1,17 @@
 import { Field, GraphQLTimestamp, InputType, Int } from '@nestjs/graphql';
 import { LootDistribution } from './loot-distribution.input';
+import { EventStatus } from '../entities/event.entity';
 
 @InputType()
 export class CreateEventInput {
   @Field(() => String)
-  password: string;
+  brand: string;
+
+  @Field(() => String)
+  name: string;
+
+  @Field(() => String, { nullable: true })
+  description?: string;
 
   @Field(() => GraphQLTimestamp)
   startDate: Date;
@@ -12,9 +19,9 @@ export class CreateEventInput {
   @Field(() => GraphQLTimestamp)
   endDate: Date;
 
-  @Field(() => String, { nullable: true })
-  name?: string;
-
   @Field(() => [LootDistribution])
   lootsDistribution: LootDistribution[];
+
+  @Field(() => Int)
+  lootBoxesAmount: number;
 }

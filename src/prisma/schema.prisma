@@ -12,68 +12,61 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Crate {
-  id           Int     @id @default(autoincrement())
-  address      String
-  positionName String
-  latitude     Float
-  longitude    Float
-  qrCodeId     Int?    @unique
-  qrCode       QRCode? @relation(fields: [qrCodeId], references: [id])
-}
-
-model QRCode {
-  id          Int           @id @default(autoincrement())
-  hash        String        @unique
-  crateId Int?
-  crate   Crate?
-  lootBoxes   LootBox[]
-  scanHistory QRScanEvent[]
-}
-
 model Event {
-  id        Int       @id @default(autoincrement())
-  startDate DateTime
-  endDate   DateTime
-  name      String?
-  lootBoxes LootBox[]
+  id             String       @id @default(uuid())
+  startDate      DateTime
+  endDate        DateTime
+  brand          String
+  name           String
+  description    String?
+  status         EventStatus @default(CREATED)
+  lootBoxes      LootBox[]
+}
+
+enum EventStatus {
+  CREATED
+  ACTIVE
+  CANCELLED
 }
 
 model User {
-  id                  Int       @id @default(autoincrement())
+  id                  String       @id @default(uuid())
   email               String    @unique
   drawPrizeRegistered Boolean   @default(false)
   openedLootBoxes     LootBox[]
 }
 
 model LootBox {
-  id         String    @id @default(uuid())
-  isOpened   Boolean   @default(false)
-  dateOpened DateTime?
-  lootId     Int?
-  loot       Loot?     @relation(fields: [lootId], references: [id])
-  openedById Int?
-  openedBy   User?     @relation(fields: [openedById], references: [id])
-  eventId    Int
-  event      Event     @relation(fields: [eventId], references: [id])
-  qrCodeId   Int?
-  qrCode     QRCode?   @relation(fields: [qrCodeId], references: [id])
+  id            String     @id @default(uuid())
+  lootClaimed   Boolean    @default(false)
+  dateOpened    DateTime?
+  lootId     String?
+  loot       Loot?      @relation(fields: [lootId], references: [id])
+  openedById String?
+  openedBy   User?      @relation(fields: [openedById], references: [id])
+  eventId    String
+  event      Event      @relation(fields: [eventId], references: [id])
+  locationId String?    @unique
+  location   Location?  @relation(fields: [locationId], references: [id])
 }
 
 model Loot {
-  id                Int       @id @default(autoincrement())
-  name              String    @unique
+  id                String    @id @default(uuid())
+  name              String    
   displayName       String
   totalSupply       Int
-  circulatingSupply Int
+  circulatingSupply Int       @default(0)
   lootBoxes         LootBox[]
 }
 
-model QRScanEvent {
-  id        Int      @id @default(autoincrement())
-  date      DateTime @default(now())
-  latitude  Float?
-  longitude Float?
-  qrCodeId  Int
-  qrCode    QRCode   @relation(fields: [qrCodeId], references: [id])
+
+model Location {
+  id           String     @id @default(uuid())
+  address      String?
+  positionName String?
+  latitude     Float
+  longitude    Float
+  lootBox      LootBox? 
 }
+
+// ScanEvent should register the lootbox, event, date and user.

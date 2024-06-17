@@ -7,6 +7,9 @@ export class ClaimLootBoxInput {
   @Field(() => String)
   email: string;
 
+  @Field(() => String)
+  address: string;
+
   @IsUUID()
   @Field(() => String)
   lootBoxId: string;

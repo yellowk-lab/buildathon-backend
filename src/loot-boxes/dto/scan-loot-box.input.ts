@@ -2,7 +2,7 @@ import { InputType, Field, Float } from '@nestjs/graphql';
 import { IsNumber, IsString } from 'class-validator';
 
 @InputType()
-export class ScanQRCodeInput {
+export class ScanLootBoxInput {
   @IsString()
   @Field(() => String)
   hash: string;

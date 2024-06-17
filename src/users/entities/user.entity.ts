@@ -4,8 +4,8 @@ import { User as UserPrisma } from '@prisma/client';
 
 @ObjectType()
 export class User {
-  @Field(() => Int)
-  id: number;
+  @Field(() => String)
+  id: string;
 
   @Field(() => String)
   email: string;

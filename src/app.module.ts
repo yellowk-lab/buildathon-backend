@@ -10,10 +10,9 @@ import { UsersModule } from './users/users.module';
 import { MomentModule } from './core/moment/moment.module';
 import { LootBoxesModule } from './loot-boxes/loot-boxes.module';
 import { HttpModule } from './http/http.module';
-import { QRCodesModule } from './qr-codes/qr-codes.module';
 import { MailModule } from './mail/mail.module';
 import { EventsModule } from './events/events.module';
-import { CratesModule } from './crates/crates.module';
+import { LocationsModule } from './locations/locations.module';
 
 interface ExceptionType extends GraphQLErrorExtensions {
   status?: string | undefined;
@@ -58,10 +57,9 @@ interface ExceptionType extends GraphQLErrorExtensions {
     UsersModule,
     LootBoxesModule,
     HttpModule,
-    QRCodesModule,
     MailModule,
     EventsModule,
-    CratesModule,
+    LocationsModule,
   ],
 })
 export class AppModule {}

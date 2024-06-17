@@ -36,14 +36,14 @@ export function generateFakeLoot(overrides?: Partial<Loot>): Loot {
   const totalSupply = faker.number.int({ min: 10, max: 100 });
   const circulatingSupply = faker.number.int({ min: 0, max: totalSupply });
   const claimedSupply = faker.number.int({ min: 0, max: totalSupply });
-  const loot: Loot = {
-    id: faker.number.int({ min: 1, max: 10000000 }),
-    name: faker.commerce.product(),
-    displayName: faker.commerce.productName(),
-    totalSupply: totalSupply,
-    circulatingSupply: circulatingSupply,
-    claimedSupply: claimedSupply,
-    ...overrides,
-  };
-  return loot;
+  // const loot: Loot = {
+  //   id: faker.number.int({ min: 1, max: 10000000 }),
+  //   name: faker.commerce.product(),
+  //   displayName: faker.commerce.productName(),
+  //   totalSupply: totalSupply,
+  //   circulatingSupply: circulatingSupply,
+  //   claimedSupply: claimedSupply,
+  //   ...overrides,
+  // };
+  return null;
 }

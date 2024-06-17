@@ -1,5 +1,5 @@
 // Utility function to shuffle an array (Fisher-Yates algorithm)
-export function shuffleArray(array) {
+export function shuffleArray(array: any[]) {
   let currentIndex = array.length,
     randomIndex;
 
