@@ -1,9 +1,9 @@
-import { ObjectType, Field, Float } from '@nestjs/graphql';
+import { ObjectType, Field, Float, ID } from '@nestjs/graphql';
 import { Location as LocationPrisma } from '@prisma/client';
 
 @ObjectType()
 export class Location {
-  @Field(() => String)
+  @Field(() => ID)
   id: string;
 
   @Field(() => Float)

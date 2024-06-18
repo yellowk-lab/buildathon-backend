@@ -1,10 +1,10 @@
 import { LootBox } from '../../loot-boxes/entities/loot-box.entity';
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { User as UserPrisma } from '@prisma/client';
 
 @ObjectType()
 export class User {
-  @Field(() => String)
+  @Field(() => ID)
   id: string;
 
   @Field(() => String)

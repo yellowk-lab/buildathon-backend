@@ -22,15 +22,15 @@ type Event {
   brand: String!
   description: String
   endDate: Timestamp!
-  id: String!
+  id: ID!
   lootBoxes: [LootBox!]
   name: String!
   startDate: Timestamp!
-  status: String
+  status: String!
 }
 
 type Location {
-  id: String!
+  id: ID!
   latitude: Float!
   longitude: Float!
 }
@@ -39,7 +39,7 @@ type Loot {
   circulatingSupply: Int!
   claimedSupply: Int
   displayName: String!
-  id: String!
+  id: ID!
   lootBoxes: [LootBox!]
   name: String!
   totalSupply: Int!
@@ -93,6 +93,6 @@ scalar Timestamp
 type User {
   drawPrizeRegistered: Boolean!
   email: String!
-  id: String!
+  id: ID!
   openedLootBoxes: [LootBox!]
 }

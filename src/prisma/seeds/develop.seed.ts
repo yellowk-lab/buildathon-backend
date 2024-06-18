@@ -92,7 +92,7 @@ const generateLootBoxes = async (amount: number) => {
 
 const createRandomUser = () => ({
   id: uniqueEnforcerId.enforce(() => {
-    return faker.database.mongodbObjectId();
+    return faker.string.uuid();
   }),
   email: uniqueEnforcerEmail.enforce(() => {
     return faker.internet.email().toLowerCase();
