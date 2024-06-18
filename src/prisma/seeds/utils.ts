@@ -25,3 +25,41 @@ export const seedTable = async (
   console.log(`Created ${creation?.count} records in ${name} table`);
   return await prisma[name].findMany();
 };
+
+export function getRandomCoordinates(
+  lat: number,
+  lon: number,
+  radiusInMeters: number,
+) {
+  const radiusInDegrees = radiusInMeters / 111300;
+
+  const u = Math.random();
+  const v = Math.random();
+  const w = radiusInDegrees * Math.sqrt(u);
+  const t = 2 * Math.PI * v;
+  const deltaLat = w * Math.cos(t);
+  const deltaLon = (w * Math.sin(t)) / Math.cos(lat * (Math.PI / 180));
+
+  const newLat = lat + deltaLat;
+  const newLon = lon + deltaLon;
+
+  return { latitude: newLat, longitude: newLon };
+}
+
+export function generateRandomLocations(
+  centerLat: number,
+  centerLon: number,
+  radiusInMeters: number,
+  numberOfLocations: number,
+): Geocoordinates[] {
+  const locations = [];
+  for (let i = 0; i < numberOfLocations; i++) {
+    locations.push(getRandomCoordinates(centerLat, centerLon, radiusInMeters));
+  }
+  return locations;
+}
+
+interface Geocoordinates {
+  latitude: number;
+  longitude: number;
+}

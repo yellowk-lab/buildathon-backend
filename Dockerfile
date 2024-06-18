@@ -24,9 +24,6 @@ COPY --chown=node:node package*.json ./
 # Install app dependencies using the `npm ci` command instead of `npm install`
 RUN npm ci
 
-# Temporary - Solution to fix platform dependency issues
-RUN npm i --save-dev @css-inline/css-inline-linux-x64-gnu
-
 # Bundle app source
 COPY --chown=node:node . .
 

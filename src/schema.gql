@@ -3,41 +3,43 @@
 # ------------------------------------------------------
 
 input ClaimLootBoxInput {
+  address: String!
   email: String!
   lootBoxId: String!
 }
 
-type Crate {
-  address: String!
-  id: Int!
-  latitude: Float!
-  longitude: Float!
-  positionName: String!
-  qrCode: QRCode
-  qrCodeId: Int
-}
-
 input CreateEventInput {
+  brand: String!
+  description: String
   endDate: Timestamp!
+  lootBoxesAmount: Int!
   lootsDistribution: [LootDistribution!]!
-  name: String
-  password: String!
+  name: String!
   startDate: Timestamp!
 }
 
 type Event {
+  brand: String!
+  description: String
   endDate: Timestamp!
-  id: Int!
+  id: ID!
   lootBoxes: [LootBox!]
-  name: String
+  name: String!
   startDate: Timestamp!
+  status: String!
+}
+
+type Location {
+  id: ID!
+  latitude: Float!
+  longitude: Float!
 }
 
 type Loot {
   circulatingSupply: Int!
   claimedSupply: Int
   displayName: String!
-  id: Int!
+  id: ID!
   lootBoxes: [LootBox!]
   name: String!
   totalSupply: Int!
@@ -46,15 +48,9 @@ type Loot {
 type LootBox {
   dateOpened: Timestamp
   event: Event
-  eventId: Int!
-  id: ID!
-  isOpened: Boolean!
-  loot: Loot
-  lootId: Int
+  location: Location
+  lootClaimed: Boolean!
   openedBy: User
-  openedById: Int
-  qrCode: QRCode
-  qrCodeId: Int
 }
 
 input LootDistribution {
@@ -63,43 +59,20 @@ input LootDistribution {
 }
 
 type Mutation {
-  claimLootBox(claimInput: ClaimLootBoxInput!): LootBox!
-  createEvent(createEventInput: CreateEventInput!): Event!
+  claimLootBox(input: ClaimLootBoxInput!): LootBox!
+  createEvent(input: CreateEventInput!, password: String!): Event!
   prizeDrawRegistration(email: String!): User!
-  removeUnusedLootBoxes(password: String!): String!
-  scanLootBoxQRCode(scanInput: ScanQRCodeInput!): LootBox!
+  scanLootBox(input: ScanLootBoxInput!): LootBox!
   sendWinEmail(sendWinEmailInput: SendWinEmailInput!): String!
 }
 
-type QRCode {
-  crate: Crate
-  crateId: Int
-  id: Int!
-  lootBoxes: [LootBox!]
-  scanHistory: [QRScanEvent!]
-}
-
-type QRScanEvent {
-  date: Timestamp!
-  id: Int!
-  latitude: Float
-  longitude: Float
-  qrCode: QRCode!
-  qrCodeId: Int!
-}
-
 type Query {
-  crate(id: Int!): Crate!
-  crates(skip: Int, take: Int): [Crate!]!
-  loot(id: Int!): Loot!
-  lootBoxByHash(hash: String!): LootBox!
+  events: [Event!]!
+  loot(id: String!): Loot!
   loots: [Loot!]!
-  lootsTotalSupply: Int!
-  totalUnclaimedLoots: Int!
-  upcomingEvent: Event!
 }
 
-input ScanQRCodeInput {
+input ScanLootBoxInput {
   hash: String!
   latitude: Float!
   longitude: Float!
@@ -107,6 +80,7 @@ input ScanQRCodeInput {
 
 input SendWinEmailInput {
   email: String!
+  eventId: String!
   lootName: String!
   password: String!
 }
@@ -119,6 +93,6 @@ scalar Timestamp
 type User {
   drawPrizeRegistered: Boolean!
   email: String!
-  id: Int!
+  id: ID!
   openedLootBoxes: [LootBox!]
 }

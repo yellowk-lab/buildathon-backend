@@ -6,22 +6,19 @@ import { MomentService } from '../core/moment/moment.service';
 import { Moment } from 'moment-timezone';
 import { LootsService } from '../loot-boxes/loots/loots.service';
 import { LootBoxesService } from '../loot-boxes/loot-boxes.service';
-import { QRCodesService } from '../qr-codes/qr-codes.service';
-import { LootDistribution } from './dto/loot-distribution.input';
-import { QRCode } from '../qr-codes/entities/qr-code.entity';
+import { CreateEventInput } from './dto/create-event.input';
 
 @Injectable()
 export class EventsService {
   constructor(
     readonly prisma: PrismaService,
-    private readonly lootsService: LootsService,
+    private readonly momentService: MomentService,
     @Inject(forwardRef(() => LootBoxesService))
     private readonly lootBoxesService: LootBoxesService,
-    private readonly qrCodesService: QRCodesService,
-    private readonly momentService: MomentService,
+    private readonly lootsService: LootsService,
   ) {}
 
-  async findOneById(id: number): Promise<Event> {
+  async findOneById(id: string): Promise<Event> {
     try {
       const event = await this.prisma.event.findUniqueOrThrow({
         where: { id },
@@ -32,7 +29,7 @@ export class EventsService {
     }
   }
 
-  async getOneById(id: number): Promise<Event | null> {
+  async getOneById(id: string): Promise<Event | null> {
     try {
       return await this.findOneById(id);
     } catch (error) {
@@ -40,102 +37,72 @@ export class EventsService {
     }
   }
 
-  async getUpcomingEvent(): Promise<Event | null> {
+  async getActiveEvents() {
+    const now = this.momentService.get();
     try {
-      const moment = this.momentService.get();
-      const now = moment(Date.now()).toDate();
-      const event = await this.prisma.event.findFirstOrThrow({
-        where: { startDate: { gt: now } },
+      const events = await this.prisma.event.findMany({
+        where: {
+          status: 'ACTIVE',
+          endDate: {
+            gt: now().toDate(),
+          },
+          startDate: {
+            lt: now().toDate(),
+          },
+        },
       });
-      return Event.create(event, this.momentService);
+      return events.map((e) => Event.create(e, this.momentService));
     } catch (error) {
+      console.log(error);
       throw new EventsError(
         EventsError.NOT_FOUND,
-        'No new events are currently planned.',
+        'There are no active events at the moment.',
       );
     }
   }
 
-  async getOnGoingEvent(): Promise<Event> {
-    try {
-      const moment = this.momentService.get();
-      const now = moment(Date.now()).toDate();
-      const event = await this.prisma.event.findFirstOrThrow({
-        where: { startDate: { lte: now }, endDate: { gte: now } },
-      });
-      return Event.create(event, this.momentService);
-    } catch (error) {
-      throw new EventsError(
-        EventsError.NOT_FOUND,
-        'There is no ongoing event at the moment',
+  async createEvent(input: CreateEventInput): Promise<Event> {
+    const {
+      brand,
+      name,
+      description,
+      startDate,
+      endDate,
+      lootsDistribution,
+      lootBoxesAmount,
+    } = input;
+    const totalAmountOfLoots = lootsDistribution.reduce(
+      (a, b) => a + b.amount,
+      0,
+    );
+
+    if (lootBoxesAmount < totalAmountOfLoots) {
+      throw Error(
+        'EventService: Amount of lootboxes to create must be greater or equal to the available loots.',
       );
     }
-  }
 
-  async getPastAndFinishedEvents(from?: Moment): Promise<Event[]> {
-    const moment = this.momentService.get();
-    const now = from ? from : moment(Date.now());
-    const pastEvents = await this.prisma.event.findMany({
-      where: {
-        startDate: { lte: now.toDate() },
-        endDate: { lte: now.toDate() },
-      },
-    });
-    return pastEvents.map((e) => Event.create(e, this.momentService));
-  }
-
-  async createEvent(
-    startDate: Date,
-    endDate: Date,
-    lootsDistribution: LootDistribution[],
-    name?: string,
-  ): Promise<Event> {
     const { start, end } = this.getVerifiedDates(startDate, endDate);
     const event = await this.prisma.event.create({
       data: {
+        brand: brand,
+        name: name,
+        description: description,
         startDate: start.toDate(),
         endDate: end.toDate(),
-        name: name,
       },
     });
 
-    let qrCodeIndex = 0;
-    const randomizedQrCodes: QRCode[] =
-      await this.qrCodesService.getAllShuffled();
-    for (const lootItem of lootsDistribution) {
-      const loot = await this.lootsService.getOneByName(lootItem.name);
-      if (loot) {
-        const canBeDistributed =
-          await this.lootsService.verifyDistributionAvailability(
-            loot,
-            lootItem.amount,
-          );
-        if (canBeDistributed) {
-          for (let i = 1; i <= lootItem.amount; i++) {
-            await this.lootBoxesService.createLootBox(
-              event.id,
-              randomizedQrCodes[qrCodeIndex].id,
-              loot.id,
-            );
-            qrCodeIndex++;
-          }
-          const circulatingSupply =
-            await this.lootsService.computeCirculatingSupply(loot);
-          await this.lootsService.updateCirculatingSupply(
-            loot.id,
-            circulatingSupply,
-          );
-        }
-      }
-    }
+    const createdLootBoxes = await this.lootBoxesService.createLootBoxes(
+      event.id,
+      lootBoxesAmount,
+    );
+    const createdLoots = await this.lootsService.createLoots(lootsDistribution);
 
-    while (qrCodeIndex < randomizedQrCodes.length) {
-      await this.lootBoxesService.createLootBox(
-        event.id,
-        randomizedQrCodes[qrCodeIndex].id,
-      );
-      qrCodeIndex++;
-    }
+    await this.lootBoxesService.assignLootsToLootBoxes(
+      createdLootBoxes,
+      createdLoots,
+    );
 
     return Event.create(event, this.momentService);
   }

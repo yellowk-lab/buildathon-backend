@@ -1,11 +1,11 @@
-import { Field, ObjectType, Int } from '@nestjs/graphql';
+import { Field, ObjectType, Int, ID } from '@nestjs/graphql';
 import { Loot as LootPrisma } from '@prisma/client';
 import { LootBox } from './loot-box.entity';
 
 @ObjectType()
 export class Loot {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 
   @Field(() => String)
   name: string;
@@ -19,14 +19,14 @@ export class Loot {
   @Field(() => Int)
   circulatingSupply: number;
 
-  @Field(() => [LootBox], { nullable: true })
-  lootBoxes?: LootBox[];
-
   @Field(() => Int, { nullable: true })
   claimedSupply?: number;
 
+  @Field(() => [LootBox], { nullable: true })
+  lootBoxes?: LootBox[];
+
   constructor(
-    id: number,
+    id: string,
     name: string,
     displayName: string,
     totalSupply: number,

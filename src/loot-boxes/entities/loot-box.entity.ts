@@ -2,57 +2,49 @@ import { Field, ObjectType, Int, GraphQLTimestamp, ID } from '@nestjs/graphql';
 import { User } from '../../users/entities/user.entity';
 import { Loot } from './loot.entity';
 import { Event } from '../../events/entities/event.entity';
-import { QRCode } from '../../qr-codes/entities/qr-code.entity';
-import { LootBox as LootBoxPrisma, Event as EventPrisma } from '@prisma/client';
+import { LootBox as LootBoxPrisma } from '@prisma/client';
+import { Location } from '@module/locations/entities/location.entity';
 
 @ObjectType()
 export class LootBox {
-  @Field(() => ID)
   id: string;
 
   @Field(() => Boolean)
-  isOpened: boolean;
+  lootClaimed: boolean;
 
   @Field(() => GraphQLTimestamp, { nullable: true })
   dateOpened?: Date;
 
-  @Field(() => Int, { nullable: true })
-  lootId?: number;
+  lootId?: string;
 
-  @Field(() => Loot, { nullable: true })
   loot?: Loot;
 
-  @Field(() => Int, { nullable: true })
-  openedById?: number;
+  openedById?: string;
 
   @Field(() => User, { nullable: true })
   openedBy?: User;
 
-  @Field(() => Int)
-  eventId: number;
+  eventId: string;
 
   @Field(() => Event, { nullable: true })
   event?: Event;
 
-  @Field(() => Int, { nullable: true })
-  qrCodeId?: number;
+  locationId: string;
 
-  @Field(() => QRCode, { nullable: true })
-  qrCode?: QRCode;
+  @Field(() => Location, { nullable: true })
+  location: Location;
 
   constructor(
     id: string,
-    isOpened: boolean,
-    eventId: number,
-    qrCodeId?: number,
-    openedById?: number,
-    lootId?: number,
+    lootClaimed: boolean,
+    eventId: string,
+    openedById?: string,
+    lootId?: string,
     openedAt?: Date,
   ) {
     this.id = id;
-    this.isOpened = isOpened;
+    this.lootClaimed = lootClaimed;
     this.eventId = eventId;
-    this.qrCodeId = qrCodeId;
     this.openedById = openedById;
     this.lootId = lootId;
     this.dateOpened = openedAt;
@@ -61,9 +53,8 @@ export class LootBox {
   static create(lootBox: LootBoxPrisma): LootBox {
     return new LootBox(
       lootBox.id,
-      lootBox.isOpened,
+      lootBox.lootClaimed,
       lootBox.eventId,
-      lootBox.qrCodeId,
       lootBox.openedById,
       lootBox.lootId,
       lootBox.dateOpened,

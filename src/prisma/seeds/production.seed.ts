@@ -1,24 +1,11 @@
 import { PrismaClient } from '@prisma/client';
-import { crates } from './crates-geolocations';
-import { hashes } from './qr-code-hashes';
-import { loots } from './loots';
 
 const prisma = new PrismaClient();
 
 export const main = async () => {
   console.log('Seeding production...');
   try {
-    await seedTable('qRCode', hashes);
-    await seedTable(
-      'crate',
-      crates?.map((crate, i) => ({
-        address: crate.Address,
-        positionName: crate.PositionName,
-        latitude: parseFloat(crate.Latitude),
-        longitude: parseFloat(crate.Longitude),
-      })),
-    );
-    await seedTable('loot', loots);
+    // await seedTable('loot', loots);
   } catch (error) {
     console.error(error);
     process.exit(1);

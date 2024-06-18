@@ -7,12 +7,30 @@ import { LootsError } from './loots.error';
 export class LootsService {
   constructor(readonly prisma: PrismaService) {}
 
+  async createLoots(
+    lootsDistribution: { name: string; amount: number }[],
+  ): Promise<Loot[]> {
+    const createdLoots = await Promise.all(
+      lootsDistribution.map(async (lootDistribution) => {
+        const loot = await this.prisma.loot.create({
+          data: {
+            name: lootDistribution.name,
+            displayName: lootDistribution.name,
+            totalSupply: lootDistribution.amount,
+          },
+        });
+        return loot;
+      }),
+    );
+    return createdLoots.map(Loot.create);
+  }
+
   async findAll(): Promise<Loot[]> {
     const loots = await this.prisma.loot.findMany();
     return loots.map(Loot.create);
   }
 
-  async findOneById(id: number): Promise<Loot> {
+  async findOneById(id: string): Promise<Loot> {
     try {
       const loot = await this.prisma.loot.findUnique({ where: { id } });
       return Loot.create(loot);
@@ -21,20 +39,9 @@ export class LootsService {
     }
   }
 
-  async getOneById(id: number): Promise<Loot | null> {
+  async getOneById(id: string): Promise<Loot | null> {
     try {
       return await this.findOneById(id);
-    } catch (error) {
-      return null;
-    }
-  }
-
-  async getOneByName(name: string): Promise<Loot | null> {
-    try {
-      const loot = await this.prisma.loot.findUniqueOrThrow({
-        where: { name },
-      });
-      return loot;
     } catch (error) {
       return null;
     }
@@ -63,13 +70,13 @@ export class LootsService {
     return lootsTotalSupply - totalClaimedSupply;
   }
 
-  async countClaimedById(lootId: number): Promise<number> {
+  async countClaimedById(lootId: string): Promise<number> {
     return await this.prisma.lootBox.count({
       where: {
         loot: {
           id: lootId,
         },
-        isOpened: true,
+        lootClaimed: true,
       },
     });
   }
@@ -82,7 +89,7 @@ export class LootsService {
   }
 
   async updateCirculatingSupply(
-    lootId: number,
+    lootId: string,
     circulatingSupply: number,
   ): Promise<Loot> {
     const updatedLoot = await this.prisma.loot.update({

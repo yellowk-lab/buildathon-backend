@@ -19,18 +19,8 @@ export class LootsResolver {
   }
 
   @Query(() => Loot, { name: 'loot' })
-  async getLoot(@Args('id', { type: () => Int }) id: number) {
+  async getLoot(@Args('id') id: string) {
     return this.lootsService.findOneById(id);
-  }
-
-  @Query(() => Int, { name: 'totalUnclaimedLoots' })
-  async getTotalUnclaimedSupply() {
-    return await this.lootsService.getTotalUnclaimedSupply();
-  }
-
-  @Query(() => Int, { name: 'lootsTotalSupply' })
-  async getTotalSupplySum() {
-    return await this.lootsService.getLootsTotalSupplySum();
   }
 
   @ResolveField('claimedSupply', () => Int, { nullable: true })

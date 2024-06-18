@@ -6,19 +6,16 @@ services:
       target: development
     volumes:
       - .:/usr/src/app
-      #./node_modules:/usr/src/app/node_modules
-      - /usr/src/app/node_modules
+      - ./node_modules:/usr/src/app/node_modules
     env_file:
       - .env
     environment:
-      # Change the DATABASE_URL to match the MySQL connection string format
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_DATABASE}?schema=public
     command: npm run start:dev
     ports:
       - 8000:8000
     depends_on:
       - postgres
-  # Define the mysql service
   postgres:
     image: postgres
     restart: always
