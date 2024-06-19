@@ -12,8 +12,8 @@ import { LootBoxesError } from './loot-boxes.error';
 import { LootsService } from './loots/loots.service';
 import { shuffleArray } from '@module/common/utils/shuffle.util';
 import { Loot } from './entities/loot.entity';
-import { Location } from '@module/locations/entities/location.entity';
 import { Web3Service } from '../web3/web3.service';
+import { EventsService } from '../events/events.service';
 
 @Injectable()
 export class LootBoxesService {
@@ -24,6 +24,7 @@ export class LootBoxesService {
     private configService: ConfigService,
     private momentService: MomentService,
     private web3Service: Web3Service,
+    private eventsService: EventsService,
   ) {}
 
   private maximalDistanceToScan =
@@ -62,65 +63,51 @@ export class LootBoxesService {
     );
   }
 
-  async getLocationBy(id: string): Promise<Location> {
-    const lootBoxWithLocation = await this.prisma.lootBox.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        location: true,
-      },
-    });
-    if (!lootBoxWithLocation) {
+  async claimLootBox(
+    email: string,
+    address: string,
+    lootBoxId: string,
+  ): Promise<LootBox> {
+    const lootBox = await this.findOneById(lootBoxId);
+
+    if (!lootBox.lootId) {
       throw new LootBoxesError(
-        LootBoxesError.NOT_FOUND,
-        'The loot box can not be found.',
+        LootBoxesError.NO_LOOT_TO_CLAIM,
+        'This loot box does not contain any loot to claim',
       );
     }
-    if (!lootBoxWithLocation.location) {
-      return null;
+    if (lootBox.lootClaimed) {
+      throw new LootBoxesError(
+        LootBoxesError.ALREADY_CLAIMED,
+        'This loot box has already been claimed',
+      );
     }
-    return Location.create(lootBoxWithLocation.location);
-  }
 
-  async claimLootBox(email: string, lootBoxId: string): Promise<LootBox> {
-    const lootBox = await this.prisma.lootBox.findUnique({
-      where: { id: lootBoxId },
-    });
-    // if (!lootBox) {
-    //   throw new LootBoxesError(
-    //     LootBoxesError.NOT_FOUND,
-    //     'The loot box can not be found',
-    //   );
-    // }
-    // if (lootBox.openedById !== null) {
-    //   throw new LootBoxesError(
-    //     LootBoxesError.ALREADY_CLAIMED,
-    //     'This loot box has already been claimed.',
-    //   );
-    // }
-    // const hasBeenFound = await this.hasBeenScanned(lootBoxId);
-    // if (!hasBeenFound) {
-    //   throw new LootBoxesError(
-    //     LootBoxesError.FORBIDDEN,
-    //     'This lootbox has not been scanned yet and cannot be claimed.',
-    //   );
-    // }
+    const loot = await this.lootsService.findOneById(lootBox.lootId);
+    let eventName = await this.eventsService.getEventName(lootBox.eventId);
+    eventName = 'based-block-party'; // TEMP
+    const baseUrl = this.configService
+      .get<string>('DOS_CDN')
+      .concat('/', eventName, '/');
+    const lootImgUrl = baseUrl.concat('img/', loot.name, '.png');
+    const lootJsonUrl = baseUrl.concat(loot.name, '.json');
+    await this.lootsService.decreaseCirculatingSupplyByOne(lootBox.lootId);
     const claimedLootBox = await this.setAndCreateWinner(lootBoxId, email);
-    const loot = await this.lootsService.getOneById(lootBox.lootId);
-    // const lootImgUrl =
-    //   this.configService.get<string>('DOS_CDN') + '/' + loot.name + '.png';
-    // await this.emailService.sendWinnerConfirmation(
-    //   email,
-    //   lootImgUrl,
-    //   loot.displayName,
-    // );
-
-    await this.web3Service.mintNFT(
-      '0x667BbDACfb12A1fb59A443E0042A8D3eDbDF8e48',
-      loot.name,
-      ' base-block-party',
+    const nftHasBeenMinted = await this.web3Service.mintNFT(
+      address,
+      lootJsonUrl,
     );
+    const emailHasBeenSent = await this.emailService.sendWinnerConfirmation(
+      email,
+      lootImgUrl,
+      loot.displayName,
+    );
+    if (!emailHasBeenSent) {
+      console.log('Mail not send');
+    }
+    if (!nftHasBeenMinted) {
+      console.log('NFT not minted');
+    }
 
     return claimedLootBox;
   }
@@ -151,9 +138,13 @@ export class LootBoxesService {
     lootBoxId: string,
     userEmail: string,
   ): Promise<LootBox> {
+    const moment = this.momentService.get();
+    const dateOpened = moment(Date.now()).toDate();
     const updatedLootBox = await this.prisma.lootBox.update({
       where: { id: lootBoxId },
       data: {
+        lootClaimed: true,
+        dateOpened,
         openedBy: {
           connectOrCreate: {
             where: { email: userEmail },
@@ -167,14 +158,38 @@ export class LootBoxesService {
 
   async getLootBoxWithinRange(
     lootBoxId: string,
-    coordinate: GeographicCoordinate,
+    coordinates: GeographicCoordinate,
   ): Promise<LootBox> {
-    // 1. Get the loot box by id with the associated location
-    // 2. Compare the coordinates in param with the associated location.
-    // 3. Return the lootbox with associated loot or throw an error.
-
-    // TODO: Implement this properly to replace old implementation.
-    return null;
+    const lootBox = await this.prisma.lootBox.findUnique({
+      where: { id: lootBoxId },
+      include: { location: true },
+    });
+    if (!lootBox) {
+      throw new LootBoxesError(LootBoxesError.NOT_FOUND, 'LootBox not found');
+    }
+    const { location } = lootBox;
+    if (!location) {
+      throw new LootBoxesError(
+        LootBoxesError.LOCATION_MISSING,
+        'This lootbox has no location assigned',
+      );
+    }
+    const lootBoxCoordinates: GeographicCoordinate = {
+      latitude: location.latitude,
+      longitude: location.longitude,
+    };
+    const isCoordinateCloseEnough = this.isScanCloseToLootBox(
+      lootBoxCoordinates,
+      coordinates,
+    );
+    if (isCoordinateCloseEnough) {
+      return LootBox.create(lootBox);
+    } else {
+      throw new LootBoxesError(
+        LootBoxesError.NOT_WITHIN_COORDINATES_RANGE,
+        'Loot Box scanned not enough close to coordinates',
+      );
+    }
   }
 
   async updateScanned(lootBoxId: string): Promise<LootBox> {

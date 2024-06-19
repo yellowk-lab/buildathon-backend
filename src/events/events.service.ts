@@ -53,7 +53,6 @@ export class EventsService {
       });
       return events.map((e) => Event.create(e, this.momentService));
     } catch (error) {
-      console.log(error);
       throw new EventsError(
         EventsError.NOT_FOUND,
         'There are no active events at the moment.',
@@ -139,5 +138,13 @@ export class EventsService {
       );
     }
     return { start, end };
+  }
+
+  async getEventName(id: string): Promise<string> {
+    const { name } = await this.prisma.event.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+    return name;
   }
 }

@@ -11,28 +11,4 @@ export class UsersResolver {
     private readonly usersService: UsersService,
     private readonly emailService: MailService,
   ) {}
-
-  @Mutation(() => User, { name: 'prizeDrawRegistration' })
-  async createUserForPrizeDraw(@Args('email') email: string) {
-    if (!isEmail(email)) {
-      throw new UsersFieldError(
-        UsersFieldError.EMAIL_CODES.INVALID_FORMAT,
-        'Please provide a valid email address',
-        { email: 'Invalid format' },
-      );
-    }
-    const emailLowerCase = email.toLowerCase();
-    const userExists = await this.usersService.getOneByEmail(emailLowerCase);
-    if (userExists) {
-      await this.emailService.sendPrizeDrawRegistration(userExists.email);
-      const updatedUser = await this.usersService.updateDrawPrizeRegsitered(
-        userExists.id,
-        true,
-      );
-      return updatedUser;
-    }
-    const newUser = await this.usersService.createUser(emailLowerCase, true);
-    await this.emailService.sendPrizeDrawRegistration(newUser.email);
-    return newUser;
-  }
 }

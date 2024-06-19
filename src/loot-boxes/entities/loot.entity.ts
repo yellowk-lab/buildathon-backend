@@ -19,7 +19,7 @@ export class Loot {
   @Field(() => Int)
   circulatingSupply: number;
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Int)
   claimedSupply?: number;
 
   @Field(() => [LootBox], { nullable: true })

@@ -48,7 +48,9 @@ type Loot {
 type LootBox {
   dateOpened: Timestamp
   event: Event
+  id: ID!
   location: Location
+  loot: Loot
   lootClaimed: Boolean!
   openedBy: User
 }
@@ -61,8 +63,6 @@ input LootDistribution {
 type Mutation {
   claimLootBox(input: ClaimLootBoxInput!): LootBox!
   createEvent(input: CreateEventInput!, password: String!): Event!
-  prizeDrawRegistration(email: String!): User!
-  scanLootBox(input: ScanLootBoxInput!): LootBox!
   sendWinEmail(sendWinEmailInput: SendWinEmailInput!): String!
 }
 
@@ -70,6 +70,7 @@ type Query {
   events: [Event!]!
   loot(id: String!): Loot!
   loots: [Loot!]!
+  scanLootBox(input: ScanLootBoxInput!): LootBox!
 }
 
 input ScanLootBoxInput {
