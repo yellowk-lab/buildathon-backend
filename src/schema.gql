@@ -2,6 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input ChangeEventStatusInput {
+  eventId: ID!
+  newStatus: EventStatus!
+}
+
 input ClaimLootBoxInput {
   address: String!
   email: String!
@@ -27,6 +32,15 @@ type Event {
   name: String!
   startDate: Timestamp!
   status: String!
+}
+
+"""The supported status for each event"""
+enum EventStatus {
+  ACTIVE
+  CANCELLED
+
+  """The default status"""
+  CREATED
 }
 
 type Location {
@@ -63,6 +77,8 @@ input LootDistribution {
 }
 
 type Mutation {
+  assignLocationToLootBox(input: ScanLootBoxInput!): LootBox!
+  changeEventStatus(input: ChangeEventStatusInput!, password: String!): Event!
   claimLootBox(input: ClaimLootBoxInput!): LootBox!
   createEvent(input: CreateEventInput!, password: String!): Event!
   sendWinEmail(sendWinEmailInput: SendWinEmailInput!): String!
@@ -71,6 +87,7 @@ type Mutation {
 type Query {
   events: [Event!]!
   loot(id: String!): Loot!
+  lootbox(id: String!): LootBox!
   loots: [Loot!]!
   scanLootBox(input: ScanLootBoxInput!): LootBox!
 }

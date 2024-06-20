@@ -13,6 +13,8 @@ import { EventsError } from './events.error';
 import { ConfigService } from '@nestjs/config';
 import { LootBox } from '@module/loot-boxes/entities/loot-box.entity';
 import { LootBoxesService } from '@module/loot-boxes/loot-boxes.service';
+import { ChangeEventStatusInput } from './dto/change-event-status.input';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 
 @Resolver(() => Event)
 export class EventsResolver {
@@ -35,6 +37,22 @@ export class EventsResolver {
     }
 
     return await this.eventsService.createEvent(input);
+  }
+
+  @Mutation(() => Event, { name: 'changeEventStatus' })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async updateEventStatus(
+    @Args('input') input: ChangeEventStatusInput,
+    @Args('password') password: string,
+  ) {
+    if (password !== this.configService.get<string>('PASSWORD')) {
+      throw new EventsError(
+        EventsError.FORBIDDEN,
+        'Access denied: Wrong password',
+      );
+    }
+    const { eventId, newStatus } = input;
+    return await this.eventsService.setEventStatus(eventId, newStatus);
   }
 
   @Query(() => [Event], { name: 'events' })

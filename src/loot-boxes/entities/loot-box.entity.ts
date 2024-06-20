@@ -40,6 +40,7 @@ export class LootBox {
     eventId: string,
     openedById?: string,
     lootId?: string,
+    locationId?: string,
     openedAt?: Date,
   ) {
     this.id = id;
@@ -47,6 +48,7 @@ export class LootBox {
     this.eventId = eventId;
     this.openedById = openedById;
     this.lootId = lootId;
+    this.locationId = locationId;
     this.dateOpened = openedAt;
   }
 
@@ -57,6 +59,7 @@ export class LootBox {
       lootBox.eventId,
       lootBox.openedById,
       lootBox.lootId,
+      lootBox.locationId,
       lootBox.dateOpened,
     );
   }

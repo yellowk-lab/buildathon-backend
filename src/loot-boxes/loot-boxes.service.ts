@@ -16,6 +16,7 @@ import { Web3Service } from '../web3/web3.service';
 import { EventsService } from '../events/events.service';
 import { formatStringToSlug } from '../common/utils/string.util';
 import { LootsError } from './loots/loots.error';
+import { EventStatus } from '@prisma/client';
 
 @Injectable()
 export class LootBoxesService {
@@ -292,18 +293,35 @@ export class LootBoxesService {
     }
   }
 
-  async findClosestToTargetCoordinate(
-    targetCoordinate: GeographicCoordinate,
-  ): Promise<LootBox | null> {
-    // TODO: Implement this properly to replace old implementation.
-    return null;
-  }
-
-  async assignLocation(
+  async upsertLootBoxLocation(
     lootBoxId: string,
-    locationId: string,
+    coordinates: GeographicCoordinate,
   ): Promise<LootBox> {
-    // TODO: Implement this properly to replace old implementation.
-    return null;
+    const lootBox = await this.findOneById(lootBoxId);
+    const { status } = await this.eventsService.getOneById(lootBox.eventId);
+    if (status !== EventStatus.CREATED) {
+      throw new LootBoxesError(
+        LootBoxesError.FORBIDDEN,
+        'LootBox event status must be in creation mode',
+      );
+    }
+    const updatedLootBox = await this.prisma.lootBox.update({
+      where: { id: lootBoxId },
+      data: {
+        location: {
+          upsert: {
+            create: {
+              latitude: coordinates.latitude,
+              longitude: coordinates.longitude,
+            },
+            update: {
+              latitude: coordinates.latitude,
+              longitude: coordinates.longitude,
+            },
+          },
+        },
+      },
+    });
+    return LootBox.create(updatedLootBox);
   }
 }
