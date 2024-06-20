@@ -4,5 +4,6 @@ import { LocationsResolver } from './locations.resolver';
 
 @Module({
   providers: [LocationsResolver, LocationsService],
+  exports: [LocationsService],
 })
 export class LocationsModule {}

@@ -11,7 +11,10 @@ export class ScanLootBoxInput {
   @Field(() => Float)
   latitude: number;
 
-  @IsNumber({ allowNaN: false })
+  @IsNumber(
+    { allowNaN: false },
+    { message: 'Must be a valid longitude number' },
+  )
   @Field(() => Float)
   longitude: number;
 }

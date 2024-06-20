@@ -13,14 +13,14 @@ datasource db {
 }
 
 model Event {
-  id             String       @id @default(uuid())
-  startDate      DateTime
-  endDate        DateTime
-  brand          String
-  name           String
-  description    String?
-  status         EventStatus @default(CREATED)
-  lootBoxes      LootBox[]
+  id          String      @id @default(uuid())
+  startDate   DateTime
+  endDate     DateTime
+  brand       String
+  name        String
+  description String?
+  status      EventStatus @default(CREATED)
+  lootBoxes   LootBox[]
 }
 
 enum EventStatus {
@@ -30,43 +30,43 @@ enum EventStatus {
 }
 
 model User {
-  id                  String       @id @default(uuid())
+  id                  String    @id @default(uuid())
   email               String    @unique
   drawPrizeRegistered Boolean   @default(false)
   openedLootBoxes     LootBox[]
 }
 
 model LootBox {
-  id            String     @id @default(uuid())
-  lootClaimed   Boolean    @default(false)
-  dateOpened    DateTime?
-  lootId     String?
-  loot       Loot?      @relation(fields: [lootId], references: [id])
-  openedById String?
-  openedBy   User?      @relation(fields: [openedById], references: [id])
-  eventId    String
-  event      Event      @relation(fields: [eventId], references: [id])
-  locationId String?    @unique
-  location   Location?  @relation(fields: [locationId], references: [id])
+  id          String    @id @default(uuid())
+  lootClaimed Boolean   @default(false)
+  dateOpened  DateTime?
+  lootId      String?
+  loot        Loot?     @relation(fields: [lootId], references: [id])
+  openedById  String?
+  openedBy    User?     @relation(fields: [openedById], references: [id])
+  eventId     String
+  event       Event     @relation(fields: [eventId], references: [id])
+  locationId  String?   @unique
+  location    Location? @relation(fields: [locationId], references: [id])
 }
 
 model Loot {
   id                String    @id @default(uuid())
-  name              String    
+  name              String
   displayName       String
+  imageUrl          String
   totalSupply       Int
   circulatingSupply Int       @default(0)
   lootBoxes         LootBox[]
 }
 
-
 model Location {
-  id           String     @id @default(uuid())
+  id           String   @id @default(uuid())
   address      String?
   positionName String?
   latitude     Float
   longitude    Float
-  lootBox      LootBox? 
+  lootBox      LootBox?
 }
 
 // ScanEvent should register the lootbox, event, date and user.

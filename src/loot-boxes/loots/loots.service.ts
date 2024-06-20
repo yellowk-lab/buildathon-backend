@@ -8,14 +8,20 @@ export class LootsService {
   constructor(readonly prisma: PrismaService) {}
 
   async createLoots(
-    lootsDistribution: { name: string; amount: number }[],
+    lootsDistribution: {
+      name: string;
+      displayName: string;
+      imageUrl: string;
+      amount: number;
+    }[],
   ): Promise<Loot[]> {
     const createdLoots = await Promise.all(
       lootsDistribution.map(async (lootDistribution) => {
         const loot = await this.prisma.loot.create({
           data: {
             name: lootDistribution.name,
-            displayName: lootDistribution.name,
+            displayName: lootDistribution.displayName,
+            imageUrl: lootDistribution.imageUrl,
             totalSupply: lootDistribution.amount,
           },
         });
@@ -88,13 +94,14 @@ export class LootsService {
     return loot.totalSupply - totalAssignedToBox;
   }
 
-  async updateCirculatingSupply(
-    lootId: string,
-    circulatingSupply: number,
-  ): Promise<Loot> {
+  async incrementCirculatingSupply(id: string): Promise<Loot> {
     const updatedLoot = await this.prisma.loot.update({
-      where: { id: lootId },
-      data: { circulatingSupply },
+      where: { id },
+      data: {
+        circulatingSupply: {
+          increment: 1,
+        },
+      },
     });
     return Loot.create(updatedLoot);
   }

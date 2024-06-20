@@ -12,6 +12,7 @@ import { LootBoxesModule } from './loot-boxes/loot-boxes.module';
 import { HttpModule } from './http/http.module';
 import { MailModule } from './mail/mail.module';
 import { EventsModule } from './events/events.module';
+import { Web3Module } from './web3/web3.module';
 import { LocationsModule } from './locations/locations.module';
 
 interface ExceptionType extends GraphQLErrorExtensions {
@@ -59,6 +60,7 @@ interface ExceptionType extends GraphQLErrorExtensions {
     HttpModule,
     MailModule,
     EventsModule,
+    Web3Module,
     LocationsModule,
   ],
 })

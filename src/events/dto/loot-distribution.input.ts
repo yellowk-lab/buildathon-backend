@@ -5,6 +5,12 @@ export class LootDistribution {
   @Field(() => String)
   name: string;
 
+  @Field(() => String)
+  displayName: string;
+
+  @Field(() => String)
+  imageUrl: string;
+
   @Field(() => Int)
   amount: number;
 }
