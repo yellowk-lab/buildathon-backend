@@ -21,7 +21,7 @@ export class MailService {
     displayName: string,
   ): Promise<boolean> {
     try {
-      const subject = "Well Done! You have Claimed Your Exclusive Loot 🎉";
+      const subject = 'Well Done! You have Claimed Your Exclusive Loot 🎉';
       const from = {
         email: this.configService.get<string>('MAIL_FROM'),
         name: this.configService.get<string>('MAIL_NAME'),
