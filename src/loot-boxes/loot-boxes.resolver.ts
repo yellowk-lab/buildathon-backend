@@ -12,7 +12,7 @@ import { ClaimLootBoxInput } from './dto/claim-loot-box.input';
 import { LootsService } from './loots/loots.service';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { ScanLootBoxInput } from './dto/scan-loot-box.input';
-import { LootBoxesFieldsError } from './loot-boxes.error';
+import { LootBoxesError, LootBoxesFieldsError } from './loot-boxes.error';
 import { isEmail } from '../common/utils/email.util';
 import { ConfigService } from '@nestjs/config';
 import { SendWinEmailInput } from './dto/send-win-email.input';
@@ -20,6 +20,9 @@ import { LootsError } from './loots/loots.error';
 import { Location } from '@module/locations/entities/location.entity';
 import { Loot } from './entities/loot.entity';
 import { LocationsService } from '../locations/locations.service';
+import { EventsService } from '../events/events.service';
+import { Event } from '../events/entities/event.entity';
+import { EventStatus } from '../events/events.enums';
 
 @Resolver(() => LootBox)
 export class LootBoxesResolver {
@@ -27,14 +30,31 @@ export class LootBoxesResolver {
     private lootBoxesService: LootBoxesService,
     private lootsService: LootsService,
     private locationsService: LocationsService,
+    private eventsService: EventsService,
     private configService: ConfigService,
   ) {}
+
+  @Query(() => LootBox, { name: 'lootbox' })
+  async getLootBoxById(@Args('id') id: string) {
+    return await this.lootBoxesService.findOneById(id);
+  }
 
   @UsePipes(new ValidationPipe({ transform: true }))
   @Query(() => LootBox, { name: 'scanLootBox' })
   async getLootBoxByScan(@Args('input') input: ScanLootBoxInput) {
     const { hash, ...coordinates } = input;
-    return this.lootBoxesService.getLootBoxWithinRange(hash, coordinates);
+    const lootBox = await this.lootBoxesService.getLootBoxWithinRange(
+      hash,
+      coordinates,
+    );
+    const { status } = await this.eventsService.getOneById(lootBox.eventId);
+    if (status !== EventStatus.ACTIVE) {
+      throw new LootBoxesError(
+        LootBoxesError.FORBIDDEN,
+        'LootBox event not active yet',
+      );
+    }
+    return lootBox;
   }
 
   @Mutation(() => LootBox, { name: 'claimLootBox' })
@@ -68,6 +88,15 @@ export class LootBoxesResolver {
     return await this.lootBoxesService.sendWinEmail(email, lootName, eventId);
   }
 
+  @Mutation(() => LootBox, { name: 'assignLocationToLootBox' })
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async updateOrCreateLocationForLootBox(
+    @Args('input') input: ScanLootBoxInput,
+  ) {
+    const { hash, ...coordinates } = input;
+    return await this.lootBoxesService.upsertLootBoxLocation(hash, coordinates);
+  }
+
   @ResolveField('loot', () => Loot, { nullable: true })
   async getLoot(@Parent() lootBox: LootBox) {
     const { lootId } = lootBox;
@@ -78,5 +107,11 @@ export class LootBoxesResolver {
   async getLocation(@Parent() lootBox: LootBox) {
     const { locationId } = lootBox;
     return await this.locationsService.getOneById(locationId);
+  }
+
+  @ResolveField('event', () => Event, { nullable: true })
+  async getEvent(@Parent() lootBox: LootBox) {
+    const { eventId } = lootBox;
+    return await this.eventsService.getOneById(eventId);
   }
 }

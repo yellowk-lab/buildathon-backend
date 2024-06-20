@@ -1,6 +1,6 @@
 import { Field, GraphQLTimestamp, InputType, Int } from '@nestjs/graphql';
 import { LootDistribution } from './loot-distribution.input';
-import { EventStatus } from '../entities/event.entity';
+
 
 @InputType()
 export class CreateEventInput {

@@ -7,6 +7,7 @@ import { Moment } from 'moment-timezone';
 import { LootsService } from '../loot-boxes/loots/loots.service';
 import { LootBoxesService } from '../loot-boxes/loot-boxes.service';
 import { CreateEventInput } from './dto/create-event.input';
+import { EventStatus } from './events.enums';
 
 @Injectable()
 export class EventsService {
@@ -42,7 +43,7 @@ export class EventsService {
     try {
       const events = await this.prisma.event.findMany({
         where: {
-          status: 'ACTIVE',
+          status: EventStatus.ACTIVE,
           endDate: {
             gt: now().toDate(),
           },
@@ -146,5 +147,20 @@ export class EventsService {
       select: { brand: true },
     });
     return brand;
+  }
+
+  async setEventStatus(id: string, newStatus: EventStatus): Promise<Event> {
+    try {
+      const updatedEvent = await this.prisma.event.update({
+        where: { id },
+        data: { status: newStatus },
+      });
+      return Event.create(updatedEvent, this.momentService);
+    } catch (error) {
+      throw new EventsError(
+        EventsError.SERVER_CODES.INTERNAL_SERVER_ERROR,
+        error,
+      );
+    }
   }
 }
