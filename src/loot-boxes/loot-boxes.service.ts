@@ -15,6 +15,7 @@ import { Loot } from './entities/loot.entity';
 import { Web3Service } from '../web3/web3.service';
 import { EventsService } from '../events/events.service';
 import { formatStringToSlug } from '../common/utils/string.util';
+import { LootsError } from './loots/loots.error';
 
 @Injectable()
 export class LootBoxesService {
@@ -85,27 +86,38 @@ export class LootBoxesService {
     }
 
     const loot = await this.lootsService.findOneById(lootBox.lootId);
+    if (loot.circulatingSupply >= loot.totalSupply) {
+      throw new LootsError(
+        LootsError.NO_SUPPLY_LEFT,
+        'There is no supply left to claim for this loot',
+      );
+    }
     const eventBrand = await this.eventsService.getEventBrand(lootBox.eventId);
     const brandRepoSlug = formatStringToSlug(eventBrand);
     const tokenURI = this.configService
       .get<string>('DOS_CDN')
       .concat('/', brandRepoSlug, '/', loot.name, '.json');
-    await this.lootsService.decreaseCirculatingSupplyByOne(lootBox.lootId);
-    const claimedLootBox = await this.setAndCreateWinner(lootBoxId, email);
-    const nftHasBeenMinted = await this.web3Service.mintNFT(address, tokenURI);
-    const emailHasBeenSent = await this.emailService.sendWinnerConfirmation(
-      email,
-      loot.imageUrl,
-      loot.displayName,
-    );
-    if (!emailHasBeenSent) {
-      console.log('Mail not send');
-    }
-    if (!nftHasBeenMinted) {
-      console.log('NFT not minted');
-    }
 
-    return claimedLootBox;
+    const nftHasBeenMinted = await this.web3Service.mintNFT(address, tokenURI);
+
+    if (nftHasBeenMinted) {
+      await this.lootsService.incrementCirculatingSupply(lootBox.lootId);
+      const claimedLootBox = await this.setAndCreateWinner(lootBoxId, email);
+      const emailHasBeenSent = await this.emailService.sendWinnerConfirmation(
+        email,
+        loot.imageUrl,
+        loot.displayName,
+      );
+      if (!emailHasBeenSent) {
+        console.log('Mail not send');
+      }
+      return claimedLootBox;
+    } else {
+      throw new LootBoxesError(
+        LootBoxesError.CLAIM_FAIL_UNABLE_TO_MINT_NFT,
+        'Failed to mint NFT during claim',
+      );
+    }
   }
 
   isScanCloseToLootBox(

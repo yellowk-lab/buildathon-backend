@@ -9,7 +9,7 @@ import {
   Chain,
   publicActions,
 } from 'viem';
-import { baseSepolia } from 'viem/chains';
+import { base, baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 import { lootABI } from './abis/nft.abi';
 import { Web3Error } from './web3.error';
@@ -22,10 +22,16 @@ export class Web3Service {
     const account: PrivateKeyAccount = privateKeyToAccount(
       this.configService.get<Hex>('PRIVATE_KEY'),
     );
-    const provider = this.configService.get<string>('BASE_SEPOLIA_URL');
+    const isMainnet = this.configService.get<string>('MAINNET');
+    let provider: string = this.configService.get<string>('BASE_SEPOLIA_URL');
+    let chainConfig: any = baseSepolia;
+    if (isMainnet == 'true') {
+      provider = this.configService.get<string>('BASE_URL');
+      chainConfig = base;
+    }
     this.walletClient = createWalletClient({
       account,
-      chain: baseSepolia as Chain,
+      chain: chainConfig as Chain,
       transport: http(provider),
     }).extend(publicActions);
   }
@@ -49,16 +55,10 @@ export class Web3Service {
       });
       if (txReceipt?.status == 'success') {
         success = true;
-      } else {
-        throw new Web3Error(
-          Web3Error.TRANSACTION_FAILED,
-          `The transaction failed with hash ${hash}`,
-        );
       }
+      return success;
     } catch (err) {
-      throw new Web3Error(Web3Error.SERVER_CODES.INTERNAL_SERVER_ERROR, err);
+      return success;
     }
-
-    return success;
   }
 }

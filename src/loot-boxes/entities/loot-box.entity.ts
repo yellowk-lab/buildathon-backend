@@ -7,7 +7,6 @@ import { Location } from '@module/locations/entities/location.entity';
 
 @ObjectType()
 export class LootBox {
-  @Field(() => ID)
   id: string;
 
   @Field(() => Boolean)

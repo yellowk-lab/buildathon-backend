@@ -49,7 +49,6 @@ type Loot {
 type LootBox {
   dateOpened: Timestamp
   event: Event
-  id: ID!
   location: Location
   loot: Loot
   lootClaimed: Boolean!

@@ -94,12 +94,12 @@ export class LootsService {
     return loot.totalSupply - totalAssignedToBox;
   }
 
-  async decreaseCirculatingSupplyByOne(id: string): Promise<Loot> {
+  async incrementCirculatingSupply(id: string): Promise<Loot> {
     const updatedLoot = await this.prisma.loot.update({
       where: { id },
       data: {
         circulatingSupply: {
-          decrement: 1,
+          increment: 1,
         },
       },
     });
