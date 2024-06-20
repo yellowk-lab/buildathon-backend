@@ -41,6 +41,7 @@ CREATE TABLE "Loot" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "displayName" TEXT NOT NULL,
+    "imageUrl" TEXT NOT NULL,
     "totalSupply" INTEGER NOT NULL,
     "circulatingSupply" INTEGER NOT NULL DEFAULT 0,
 

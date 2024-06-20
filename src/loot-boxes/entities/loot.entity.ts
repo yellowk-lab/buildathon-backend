@@ -13,6 +13,9 @@ export class Loot {
   @Field(() => String)
   displayName: string;
 
+  @Field(() => String)
+  imageUrl: string;
+
   @Field(() => Int)
   totalSupply: number;
 
@@ -29,12 +32,14 @@ export class Loot {
     id: string,
     name: string,
     displayName: string,
+    imageUrl: string,
     totalSupply: number,
     circulatingSupply: number,
   ) {
     this.id = id;
     this.name = name;
     this.displayName = displayName;
+    this.imageUrl = imageUrl;
     this.totalSupply = totalSupply;
     this.circulatingSupply = circulatingSupply;
   }
@@ -44,6 +49,7 @@ export class Loot {
       loot.id,
       loot.name,
       loot.displayName,
+      loot.imageUrl,
       loot.totalSupply,
       loot.circulatingSupply,
     );

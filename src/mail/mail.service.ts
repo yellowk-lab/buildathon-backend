@@ -21,7 +21,7 @@ export class MailService {
     displayName: string,
   ): Promise<boolean> {
     try {
-      const subject = "Well Done! You've Claimed Your Exclusive Loot 🎉";
+      const subject = "Well Done! You have Claimed Your Exclusive Loot 🎉";
       const from = {
         email: this.configService.get<string>('MAIL_FROM'),
         name: this.configService.get<string>('MAIL_NAME'),
@@ -29,11 +29,11 @@ export class MailService {
       const message: MailDataRequired = {
         from,
         to: email,
-        subject,
         templateId: this.winnerTemplateId,
         dynamicTemplateData: {
           loot_img_url: imgUrl,
           loot_display_name: displayName,
+          subject,
         },
       };
       const [mailResponse] = await sgMail.send(message);

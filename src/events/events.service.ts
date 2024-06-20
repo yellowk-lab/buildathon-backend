@@ -140,11 +140,11 @@ export class EventsService {
     return { start, end };
   }
 
-  async getEventName(id: string): Promise<string> {
-    const { name } = await this.prisma.event.findUnique({
+  async getEventBrand(id: string): Promise<string> {
+    const { brand } = await this.prisma.event.findUnique({
       where: { id },
-      select: { name: true },
+      select: { brand: true },
     });
-    return name;
+    return brand;
   }
 }

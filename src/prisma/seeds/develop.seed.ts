@@ -63,8 +63,9 @@ const generateLootBoxes = async (amount: number) => {
 
   const loot = await prisma.loot.create({
     data: {
-      name: 'apple-gift-card-15',
-      displayName: 'Apple Gift Card - 15$',
+      name: 'apple-gift-card-25',
+      displayName: 'Apple Gift Card - 25$',
+      imageUrl: 'https://picsum.photos/seed/picsum/450/300',
       totalSupply: 100,
       circulatingSupply: 0,
     },

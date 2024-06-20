@@ -54,6 +54,7 @@ model Loot {
   id                String    @id @default(uuid())
   name              String
   displayName       String
+  imageUrl          String
   totalSupply       Int
   circulatingSupply Int       @default(0)
   lootBoxes         LootBox[]

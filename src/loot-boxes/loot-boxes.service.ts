@@ -14,6 +14,7 @@ import { shuffleArray } from '@module/common/utils/shuffle.util';
 import { Loot } from './entities/loot.entity';
 import { Web3Service } from '../web3/web3.service';
 import { EventsService } from '../events/events.service';
+import { formatStringToSlug } from '../common/utils/string.util';
 
 @Injectable()
 export class LootBoxesService {
@@ -84,22 +85,17 @@ export class LootBoxesService {
     }
 
     const loot = await this.lootsService.findOneById(lootBox.lootId);
-    let eventName = await this.eventsService.getEventName(lootBox.eventId);
-    eventName = 'based-block-party'; // TEMP
-    const baseUrl = this.configService
+    const eventBrand = await this.eventsService.getEventBrand(lootBox.eventId);
+    const brandRepoSlug = formatStringToSlug(eventBrand);
+    const tokenURI = this.configService
       .get<string>('DOS_CDN')
-      .concat('/', eventName, '/');
-    const lootImgUrl = baseUrl.concat('img/', loot.name, '.png');
-    const lootJsonUrl = baseUrl.concat(loot.name, '.json');
+      .concat('/', brandRepoSlug, '/', loot.name, '.json');
     await this.lootsService.decreaseCirculatingSupplyByOne(lootBox.lootId);
     const claimedLootBox = await this.setAndCreateWinner(lootBoxId, email);
-    const nftHasBeenMinted = await this.web3Service.mintNFT(
-      address,
-      lootJsonUrl,
-    );
+    const nftHasBeenMinted = await this.web3Service.mintNFT(address, tokenURI);
     const emailHasBeenSent = await this.emailService.sendWinnerConfirmation(
       email,
-      lootImgUrl,
+      loot.imageUrl,
       loot.displayName,
     );
     if (!emailHasBeenSent) {
