@@ -29,10 +29,10 @@ export class LootBox {
   @Field(() => Event, { nullable: true })
   event?: Event;
 
-  locationId: string;
+  locationId?: string;
 
   @Field(() => Location, { nullable: true })
-  location: Location;
+  location?: Location;
 
   constructor(
     id: string,

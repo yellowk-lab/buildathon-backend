@@ -30,7 +30,7 @@ export class LocationsService {
 
   async getOneById(id: string): Promise<Location | null> {
     try {
-      return await this.findOneById(id);
+      return !id ? null : await this.findOneById(id);
     } catch (error) {
       return null;
     }
