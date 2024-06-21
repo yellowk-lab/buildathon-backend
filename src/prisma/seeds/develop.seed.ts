@@ -9,6 +9,12 @@ const prisma = new PrismaClient();
 const uniqueEnforcerEmail = new UniqueEnforcer();
 const uniqueEnforcerId = new UniqueEnforcer();
 
+const LOOT_BOXES_AMOUNT_TO_GEN = 50;
+const USERS_AMOUNT_TO_GEN = 10;
+const CENTER_LONGITUDE = -122.4597;
+const CENTER_LATITUDE = 37.8042;
+const CENTER_RADIUS = 1000;
+
 export const main = async () => {
   console.log('Seeding develop...');
   try {
@@ -24,7 +30,7 @@ export const main = async () => {
 
 const seedUsers = async () => {
   const users = [];
-  const randomUser = 10;
+  const randomUser = USERS_AMOUNT_TO_GEN;
   for (let i = 0; i < randomUser; i++) {
     users.push(createRandomUser());
   }
@@ -33,7 +39,7 @@ const seedUsers = async () => {
 };
 
 const seedEvents = async () => {
-  const lootBoxes = await generateLootBoxes(10);
+  const lootBoxes = await generateLootBoxes(LOOT_BOXES_AMOUNT_TO_GEN);
   const createdEvents = await prisma.event.create({
     data: {
       name: 'Block Party SF - 15th June',
@@ -45,15 +51,16 @@ const seedEvents = async () => {
       lootBoxes: {
         create: lootBoxes,
       },
+      status: 'ACTIVE',
     },
   });
   console.log(createdEvents);
 };
 
 const generateLootBoxes = async (amount: number) => {
-  const centerLatitude = 37.8042;
-  const centerLongitude = -122.4597;
-  const radiusInMeters = 2000;
+  const centerLatitude = CENTER_LATITUDE;
+  const centerLongitude = CENTER_LONGITUDE;
+  const radiusInMeters = CENTER_RADIUS;
   const locations = generateRandomLocations(
     centerLatitude,
     centerLongitude,
@@ -65,7 +72,8 @@ const generateLootBoxes = async (amount: number) => {
     data: {
       name: 'apple-gift-card-25',
       displayName: 'Apple Gift Card - 25$',
-      imageUrl: 'https://picsum.photos/seed/picsum/450/300',
+      imageUrl:
+        'https://buildathon.nyc3.cdn.digitaloceanspaces.com/based-block-party/img/apple-gift-card-25.png',
       totalSupply: 100,
       circulatingSupply: 0,
     },
@@ -73,7 +81,7 @@ const generateLootBoxes = async (amount: number) => {
 
   return locations.map((location) => {
     return {
-      lootClaimed: false,
+      lootClaimed: Math.random() >= 0.5,
       loot: {
         connect: {
           id: loot.id,
@@ -81,8 +89,8 @@ const generateLootBoxes = async (amount: number) => {
       },
       location: {
         create: {
-          address: '',
-          positionName: '',
+          address: faker.location.streetAddress(),
+          positionName: faker.location.street(),
           latitude: location.latitude,
           longitude: location.longitude,
         },
