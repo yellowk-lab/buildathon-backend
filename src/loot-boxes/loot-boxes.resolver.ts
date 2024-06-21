@@ -34,6 +34,20 @@ export class LootBoxesResolver {
     private configService: ConfigService,
   ) {}
 
+  @Query(() => [String], { name: 'lootBoxIdsForEvent' })
+  async fetchLootBoxIdsByEvent(
+    @Args('eventId') eventId: string,
+    @Args('password') password: string,
+  ) {
+    if (password !== this.configService.get<string>('PASSWORD')) {
+      throw new LootsError(
+        LootsError.FORBIDDEN,
+        'Access denied: Wrong password',
+      );
+    }
+    await this.eventsService.findOneById(eventId);
+    return this.lootBoxesService.retrieveIdsByEventId(eventId);
+  }
   @Query(() => LootBox, { name: 'lootbox' })
   async getLootBoxById(@Args('id') id: string) {
     return await this.lootBoxesService.findOneById(id);

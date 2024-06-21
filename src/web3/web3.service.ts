@@ -12,7 +12,6 @@ import {
 import { base, baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 import { lootABI } from './abis/nft.abi';
-import { Web3Error } from './web3.error';
 
 @Injectable()
 export class Web3Service {
@@ -23,10 +22,9 @@ export class Web3Service {
       this.configService.get<Hex>('PRIVATE_KEY'),
     );
     const isMainnet = this.configService.get<string>('MAINNET');
-    let provider: string = this.configService.get<string>('BASE_SEPOLIA_URL');
+    const provider: string = this.configService.get<string>('RPC_PROVIDER_URL');
     let chainConfig: any = baseSepolia;
     if (isMainnet == 'true') {
-      provider = this.configService.get<string>('BASE_URL');
       chainConfig = base;
     }
     this.walletClient = createWalletClient({
