@@ -22,7 +22,7 @@ export class Web3Service {
       this.configService.get<Hex>('PRIVATE_KEY'),
     );
     const isMainnet = this.configService.get<string>('MAINNET');
-    let provider: string = this.configService.get<string>('RPC_PROVIDER_URL');
+    const provider: string = this.configService.get<string>('RPC_PROVIDER_URL');
     let chainConfig: any = baseSepolia;
     if (isMainnet == 'true') {
       chainConfig = base;
