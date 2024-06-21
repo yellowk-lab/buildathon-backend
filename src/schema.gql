@@ -87,6 +87,7 @@ type Mutation {
 type Query {
   events: [Event!]!
   loot(id: String!): Loot!
+  lootBoxIdsForEvent(eventId: String!, password: String!): [String!]!
   lootbox(id: String!): LootBox!
   loots: [Loot!]!
   scanLootBox(input: ScanLootBoxInput!): LootBox!

@@ -324,4 +324,12 @@ export class LootBoxesService {
     });
     return LootBox.create(updatedLootBox);
   }
+
+  async retrieveIdsByEventId(eventId: string): Promise<string[]> {
+    const lootBoxIds = await this.prisma.lootBox.findMany({
+      where: { eventId },
+      select: { id: true },
+    });
+    return lootBoxIds.map((obj) => obj.id);
+  }
 }
