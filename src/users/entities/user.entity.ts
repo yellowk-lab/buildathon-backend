@@ -10,17 +10,16 @@ export class User {
   @Field(() => String)
   email: string;
 
-  @Field(() => Boolean)
-  drawPrizeRegistered: boolean;
+  @Field(() => String)
+  walletAddress: string;
 
   @Field(() => [LootBox], { nullable: true })
-  openedLootBoxes?: LootBox[];
+  claimedLootBoxes?: LootBox[];
 
   static create(userDb: UserPrisma) {
     const user = new User();
     user.id = userDb.id;
     user.email = userDb.email;
-    user.drawPrizeRegistered = userDb.drawPrizeRegistered;
     return user;
   }
 }

@@ -6,9 +6,6 @@ export class LootDistribution {
   name: string;
 
   @Field(() => String)
-  displayName: string;
-
-  @Field(() => String)
   imageUrl: string;
 
   @Field(() => Int)

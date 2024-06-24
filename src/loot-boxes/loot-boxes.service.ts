@@ -99,15 +99,20 @@ export class LootBoxesService {
       .get<string>('DOS_CDN')
       .concat('/', brandRepoSlug, '/', loot.name, '.json');
 
-    const nftHasBeenMinted = await this.web3Service.mintNFT(address, tokenURI);
+    const tokenId: number = await this.web3Service.mintNFT(address, tokenURI);
 
-    if (nftHasBeenMinted) {
+    if (tokenId > -1) {
       await this.lootsService.incrementCirculatingSupply(lootBox.lootId);
-      const claimedLootBox = await this.setAndCreateWinner(lootBoxId, email);
+      const claimedLootBox = await this.setAndCreateWinner(
+        lootBoxId,
+        email,
+        address,
+        tokenId.toString(),
+      );
       const emailHasBeenSent = await this.emailService.sendWinnerConfirmation(
         email,
         loot.imageUrl,
-        loot.displayName,
+        loot.name,
       );
       if (!emailHasBeenSent) {
         console.log('Mail not send');
@@ -131,33 +136,23 @@ export class LootBoxesService {
     );
   }
 
-  async hasBeenScanned(lootBoxId: string): Promise<boolean> {
-    const lootBox = await this.prisma.lootBox.findFirst({
-      where: {
-        id: lootBoxId,
-        lootClaimed: true,
-        dateOpened: { not: null },
-        locationId: { not: null },
-      },
-    });
-    return Boolean(lootBox);
-  }
-
   async setAndCreateWinner(
     lootBoxId: string,
     userEmail: string,
+    userWallet: string,
+    lootNftId: string,
   ): Promise<LootBox> {
     const moment = this.momentService.get();
     const dateOpened = moment(Date.now()).toDate();
     const updatedLootBox = await this.prisma.lootBox.update({
       where: { id: lootBoxId },
       data: {
-        lootClaimed: true,
         dateOpened,
-        openedBy: {
+        lootNftId,
+        claimedBy: {
           connectOrCreate: {
             where: { email: userEmail },
-            create: { email: userEmail },
+            create: { email: userEmail, walletAddress: userWallet },
           },
         },
       },
@@ -201,30 +196,16 @@ export class LootBoxesService {
     }
   }
 
-  async updateScanned(lootBoxId: string): Promise<LootBox> {
-    // TODO: Implement this properly to replace old implementation.
-    const moment = this.momentService.get();
-    const updatedLootBox = await this.prisma.lootBox.update({
-      where: { id: lootBoxId },
-      data: {
-        lootClaimed: true,
-        dateOpened: moment(Date.now()).toDate(),
-      },
-    });
-    return LootBox.create(updatedLootBox);
-  }
-
   async findAll(
     filters?: {
-      lootClaimed?: boolean;
       dateOpened?: Date;
       lootId?: string;
-      openedById?: string;
+      claimedById?: string;
       eventId?: string;
     },
     include?: {
       loot?: boolean;
-      openedBy?: boolean;
+      claimedBy?: boolean;
       event?: boolean;
     },
     take?: number,
@@ -234,15 +215,12 @@ export class LootBoxesService {
       take: take,
       skip: skip,
       where: {
-        ...(filters.lootClaimed !== undefined && {
-          lootClaimed: filters.lootClaimed,
-        }),
         ...(filters.dateOpened !== undefined && {
           dateOpened: filters.dateOpened,
         }),
         ...(filters.lootId !== undefined && { lootId: filters.lootId }),
-        ...(filters.openedById !== undefined && {
-          openedById: filters.openedById,
+        ...(filters.claimedById !== undefined && {
+          claimedById: filters.claimedById,
         }),
         ...(filters.eventId !== undefined && { eventId: filters.eventId }),
       },
@@ -256,11 +234,6 @@ export class LootBoxesService {
       data: { eventId, lootId },
     });
     return LootBox.create(lootBox);
-  }
-
-  async sendWinEmail(to: string, lootName: string, eventId: string) {
-    // TODO: Implement this properly to send an email based on lootname of a specific event.
-    return null;
   }
 
   async findOneById(id: string): Promise<LootBox> {

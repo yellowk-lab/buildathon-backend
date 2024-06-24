@@ -15,7 +15,6 @@ import { ScanLootBoxInput } from './dto/scan-loot-box.input';
 import { LootBoxesError, LootBoxesFieldsError } from './loot-boxes.error';
 import { isEmail } from '../common/utils/email.util';
 import { ConfigService } from '@nestjs/config';
-import { SendWinEmailInput } from './dto/send-win-email.input';
 import { LootsError } from './loots/loots.error';
 import { Location } from '@module/locations/entities/location.entity';
 import { Loot } from './entities/loot.entity';
@@ -23,6 +22,7 @@ import { LocationsService } from '../locations/locations.service';
 import { EventsService } from '../events/events.service';
 import { Event } from '../events/entities/event.entity';
 import { EventStatus } from '../events/events.enums';
+import { UsersService } from '../users/users.service';
 
 @Resolver(() => LootBox)
 export class LootBoxesResolver {
@@ -31,6 +31,7 @@ export class LootBoxesResolver {
     private lootsService: LootsService,
     private locationsService: LocationsService,
     private eventsService: EventsService,
+    private usersService: UsersService,
     private configService: ConfigService,
   ) {}
 
@@ -71,6 +72,23 @@ export class LootBoxesResolver {
     return lootBox;
   }
 
+  @Query(() => [LootBox], { name: 'lootBoxes' })
+  async getLootBoxesClaimedByUser(@Args('email') email: string) {
+    if (!isEmail(email)) {
+      throw new LootBoxesFieldsError(
+        LootBoxesFieldsError.EMAIL_CODES.INVALID_FORMAT,
+        'Please provide a valid email address',
+        { email: 'Invalid format' },
+      );
+    }
+    const user = await this.usersService.getOneByEmail(email);
+    if (user) {
+      return this.lootBoxesService.findAll({ claimedById: user.id });
+    } else {
+      return [];
+    }
+  }
+
   @Mutation(() => LootBox, { name: 'claimLootBox' })
   @UsePipes(new ValidationPipe({ transform: true }))
   async claimLootBox(@Args('input') input: ClaimLootBoxInput) {
@@ -88,18 +106,6 @@ export class LootBoxesResolver {
       address,
       lootBoxId,
     );
-  }
-
-  @Mutation(() => String)
-  async sendWinEmail(@Args('sendWinEmailInput') data: SendWinEmailInput) {
-    const { lootName, email, eventId, password } = data;
-    if (password !== this.configService.get<string>('PASSWORD')) {
-      throw new LootsError(
-        LootsError.FORBIDDEN,
-        'Access denied: Wrong password',
-      );
-    }
-    return await this.lootBoxesService.sendWinEmail(email, lootName, eventId);
   }
 
   @Mutation(() => LootBox, { name: 'assignLocationToLootBox' })
@@ -127,5 +133,11 @@ export class LootBoxesResolver {
   async getEvent(@Parent() lootBox: LootBox) {
     const { eventId } = lootBox;
     return await this.eventsService.getOneById(eventId);
+  }
+
+  @ResolveField('lootClaimed', () => String)
+  async hasBeenClaimed(@Parent() lootBox: LootBox) {
+    const { claimedById } = lootBox;
+    return claimedById ? true : false;
   }
 }

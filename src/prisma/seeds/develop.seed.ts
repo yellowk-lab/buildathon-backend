@@ -8,6 +8,7 @@ import { generateRandomLocations } from './utils';
 const prisma = new PrismaClient();
 const uniqueEnforcerEmail = new UniqueEnforcer();
 const uniqueEnforcerId = new UniqueEnforcer();
+const uniqueEnforcerWallet = new UniqueEnforcer();
 
 const LOOT_BOXES_AMOUNT_TO_GEN = 50;
 const USERS_AMOUNT_TO_GEN = 10;
@@ -71,7 +72,6 @@ const generateLootBoxes = async (amount: number) => {
   const loot = await prisma.loot.create({
     data: {
       name: 'apple-gift-card-25',
-      displayName: 'Apple Gift Card - 25$',
       imageUrl:
         'https://buildathon.nyc3.cdn.digitaloceanspaces.com/based-block-party/img/apple-gift-card-25.png',
       totalSupply: 100,
@@ -81,7 +81,6 @@ const generateLootBoxes = async (amount: number) => {
 
   return locations.map((location) => {
     return {
-      lootClaimed: Math.random() >= 0.5,
       loot: {
         connect: {
           id: loot.id,
@@ -105,5 +104,8 @@ const createRandomUser = () => ({
   }),
   email: uniqueEnforcerEmail.enforce(() => {
     return faker.internet.email().toLowerCase();
+  }),
+  walletAddress: uniqueEnforcerWallet.enforce(() => {
+    return faker.finance.ethereumAddress();
   }),
 });

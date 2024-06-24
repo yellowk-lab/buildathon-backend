@@ -22,10 +22,4 @@ export class LootsResolver {
   async getLoot(@Args('id') id: string) {
     return this.lootsService.findOneById(id);
   }
-
-  @ResolveField('claimedSupply', () => Int, { nullable: true })
-  async getClaimedSupply(@Parent() loot: Loot) {
-    const { id } = loot;
-    return await this.lootsService.countClaimedById(id);
-  }
 }

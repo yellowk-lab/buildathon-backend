@@ -42,24 +42,10 @@ export class UsersService {
     }
   }
 
-  async createUser(
-    email: string,
-    drawPrizeRegistered?: boolean,
-  ): Promise<User> {
+  async createUser(email: string, walletAddress: string): Promise<User> {
     const user = await this.prisma.user.create({
-      data: { email, drawPrizeRegistered },
+      data: { email, walletAddress },
     });
     return User.create(user);
-  }
-
-  async updateDrawPrizeRegsitered(
-    userId: string,
-    drawPrizeRegistered: boolean,
-  ): Promise<User> {
-    const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      data: { drawPrizeRegistered },
-    });
-    return User.create(updatedUser);
   }
 }
