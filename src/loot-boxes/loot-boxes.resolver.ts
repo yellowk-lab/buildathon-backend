@@ -138,6 +138,6 @@ export class LootBoxesResolver {
   @ResolveField('lootClaimed', () => String)
   async hasBeenClaimed(@Parent() lootBox: LootBox) {
     const { claimedById } = lootBox;
-    return claimedById ? true : false;
+    return Boolean(claimedById) ? true : false;
   }
 }
