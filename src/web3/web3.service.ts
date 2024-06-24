@@ -8,6 +8,7 @@ import {
   Address,
   Chain,
   publicActions,
+  fromHex,
 } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -34,11 +35,11 @@ export class Web3Service {
     }).extend(publicActions);
   }
 
-  async mintNFT(receiver: string, tokenUri: string): Promise<boolean> {
+  async mintNFT(receiver: string, tokenUri: string): Promise<number> {
     const contractAddress: Address =
       this.configService.get<Address>('NFT_CONTRACT');
     const mintArgs = [receiver, tokenUri];
-    let success: boolean = false;
+    let tokenId: number = -1;
     try {
       const { request } = await this.walletClient.simulateContract({
         address: contractAddress,
@@ -52,11 +53,11 @@ export class Web3Service {
         hash,
       });
       if (txReceipt?.status == 'success') {
-        success = true;
+        tokenId = fromHex(txReceipt.logs[1].data, 'number');
       }
-      return success;
+      return tokenId;
     } catch (err) {
-      return success;
+      return tokenId;
     }
   }
 }

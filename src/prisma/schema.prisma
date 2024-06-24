@@ -30,20 +30,20 @@ enum EventStatus {
 }
 
 model User {
-  id                  String    @id @default(uuid())
-  email               String    @unique
-  drawPrizeRegistered Boolean   @default(false)
-  openedLootBoxes     LootBox[]
+  id               String    @id @default(uuid())
+  email            String    @unique
+  walletAddress    String    @unique
+  claimedLootBoxes LootBox[]
 }
 
 model LootBox {
   id          String    @id @default(uuid())
-  lootClaimed Boolean   @default(false)
   dateOpened  DateTime?
   lootId      String?
   loot        Loot?     @relation(fields: [lootId], references: [id])
-  openedById  String?
-  openedBy    User?     @relation(fields: [openedById], references: [id])
+  claimedById String?
+  claimedBy   User?     @relation(fields: [claimedById], references: [id])
+  lootNftId   String?
   eventId     String
   event       Event     @relation(fields: [eventId], references: [id])
   locationId  String?   @unique
@@ -53,7 +53,6 @@ model LootBox {
 model Loot {
   id                String    @id @default(uuid())
   name              String
-  displayName       String
   imageUrl          String
   totalSupply       Int
   circulatingSupply Int       @default(0)

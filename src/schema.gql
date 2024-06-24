@@ -51,8 +51,7 @@ type Location {
 
 type Loot {
   circulatingSupply: Int!
-  claimedSupply: Int
-  displayName: String!
+  claimedSupply: Int!
   id: ID!
   imageUrl: String!
   lootBoxes: [LootBox!]
@@ -61,17 +60,17 @@ type Loot {
 }
 
 type LootBox {
+  claimedBy: User
   dateOpened: Timestamp
   event: Event
   location: Location
   loot: Loot
-  lootClaimed: Boolean!
-  openedBy: User
+  lootClaimed: String!
+  lootNftId: String
 }
 
 input LootDistribution {
   amount: Int!
-  displayName: String!
   imageUrl: String!
   name: String!
 }
@@ -81,13 +80,13 @@ type Mutation {
   changeEventStatus(input: ChangeEventStatusInput!, password: String!): Event!
   claimLootBox(input: ClaimLootBoxInput!): LootBox!
   createEvent(input: CreateEventInput!, password: String!): Event!
-  sendWinEmail(sendWinEmailInput: SendWinEmailInput!): String!
 }
 
 type Query {
   events: [Event!]!
   loot(id: String!): Loot!
   lootBoxIdsForEvent(eventId: String!, password: String!): [String!]!
+  lootBoxes(email: String!): [LootBox!]!
   lootbox(id: String!): LootBox!
   loots: [Loot!]!
   scanLootBox(input: ScanLootBoxInput!): LootBox!
@@ -99,21 +98,14 @@ input ScanLootBoxInput {
   longitude: Float!
 }
 
-input SendWinEmailInput {
-  email: String!
-  eventId: String!
-  lootName: String!
-  password: String!
-}
-
 """
 `Date` type as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
 """
 scalar Timestamp
 
 type User {
-  drawPrizeRegistered: Boolean!
+  claimedLootBoxes: [LootBox!]
   email: String!
   id: ID!
-  openedLootBoxes: [LootBox!]
+  walletAddress: String!
 }

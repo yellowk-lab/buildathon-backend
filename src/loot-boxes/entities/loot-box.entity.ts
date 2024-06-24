@@ -19,10 +19,13 @@ export class LootBox {
 
   loot?: Loot;
 
-  openedById?: string;
+  claimedById?: string;
 
   @Field(() => User, { nullable: true })
-  openedBy?: User;
+  claimedBy?: User;
+
+  @Field(() => String, { nullable: true })
+  lootNftId?: string;
 
   eventId: string;
 
@@ -36,31 +39,31 @@ export class LootBox {
 
   constructor(
     id: string,
-    lootClaimed: boolean,
     eventId: string,
-    openedById?: string,
+    claimedById?: string,
     lootId?: string,
     locationId?: string,
     openedAt?: Date,
+    lootNftId?: string,
   ) {
     this.id = id;
-    this.lootClaimed = lootClaimed;
     this.eventId = eventId;
-    this.openedById = openedById;
+    this.claimedById = claimedById;
     this.lootId = lootId;
     this.locationId = locationId;
     this.dateOpened = openedAt;
+    this.lootNftId = lootNftId;
   }
 
   static create(lootBox: LootBoxPrisma): LootBox {
     return new LootBox(
       lootBox.id,
-      lootBox.lootClaimed,
       lootBox.eventId,
-      lootBox.openedById,
+      lootBox.claimedById,
       lootBox.lootId,
       lootBox.locationId,
       lootBox.dateOpened,
+      lootBox.lootNftId,
     );
   }
 }
