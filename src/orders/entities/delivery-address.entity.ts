@@ -29,8 +29,20 @@ export class DeliveryAddress {
     delivery.id = deliveryAddr.id;
     delivery.street = deliveryAddr.street;
     delivery.city = deliveryAddr.city;
+    delivery.zipCode = deliveryAddr.zipCode;
     delivery.country = deliveryAddr.country;
     delivery.orderId = deliveryAddr.orderId;
     return delivery;
+  }
+
+  getFullAddress(): string {
+    return this.street.concat(
+      ', ',
+      this.zipCode,
+      ' - ',
+      this.city,
+      ', ',
+      this.country,
+    );
   }
 }

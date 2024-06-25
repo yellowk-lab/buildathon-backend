@@ -8,12 +8,14 @@ import { OrdersError } from './orders.error';
 import { Web3Service } from '../web3/web3.service';
 import { DeliveryAddress } from './entities/delivery-address.entity';
 import { MailService } from '../mail/mail.service';
+import { LootsService } from '../loot-boxes/loots/loots.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     readonly prisma: PrismaService,
     private lootBoxesService: LootBoxesService,
+    private lootsService: LootsService,
     private usersService: UsersService,
     private web3Service: Web3Service,
     private emailService: MailService,
@@ -74,8 +76,21 @@ export class OrdersService {
             }
           : undefined,
       },
+      include: { deliveryAddress: true },
     });
+    const { deliveryAddress: deliveryAddressPrisma } = orderPrisma;
+    const deliveryAddressObj = deliveryAddressPrisma
+      ? DeliveryAddress.create(deliveryAddressPrisma)
+      : null;
     const order = Order.create(orderPrisma);
+    const { name } = await this.lootsService.getOneById(lootBox.lootId);
+    await this.emailService.sendRedeemedLootConfirmation(
+      email,
+      order.firstName,
+      order.lastName,
+      name,
+      deliveryAddressObj,
+    );
 
     return order;
   }

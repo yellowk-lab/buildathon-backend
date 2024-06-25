@@ -110,15 +110,11 @@ export class LootBoxesService {
         email,
       );
       if (email) {
-        const emailHasBeenSent =
-          await this.emailService.sendClaimedLootConfirmation(
-            email,
-            loot.imageUrl,
-            loot.name,
-          );
-        if (!emailHasBeenSent) {
-          console.log('Mail not send');
-        }
+        await this.emailService.sendClaimedLootConfirmation(
+          email,
+          loot.imageUrl,
+          loot.name,
+        );
       }
 
       return claimedLootBox;
