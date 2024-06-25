@@ -1,4 +1,4 @@
-import { Field, ID, InputType } from '@nestjs/graphql';
+import { Field, InputType } from '@nestjs/graphql';
 import { DeliveryAddressInput } from './delivery-address.input';
 import { IsEmail, IsEthereumAddress } from 'class-validator';
 

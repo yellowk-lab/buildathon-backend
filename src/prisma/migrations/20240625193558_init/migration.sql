@@ -64,7 +64,7 @@ CREATE TABLE "Location" (
 
 -- CreateTable
 CREATE TABLE "Order" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "status" "OrderStatus" NOT NULL DEFAULT 'PENDING',
     "transactionHash" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
@@ -82,7 +82,7 @@ CREATE TABLE "DeliveryAddress" (
     "city" TEXT NOT NULL,
     "zipCode" TEXT NOT NULL,
     "country" TEXT NOT NULL,
-    "orderId" TEXT NOT NULL,
+    "orderId" INTEGER NOT NULL,
 
     CONSTRAINT "DeliveryAddress_pkey" PRIMARY KEY ("id")
 );

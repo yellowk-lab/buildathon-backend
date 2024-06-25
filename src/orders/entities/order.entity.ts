@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Order as OrderPrisma } from '@prisma/client';
 import { OrderStatus } from '../orders.enum';
 import { Loot } from '../../loot-boxes/entities/loot.entity';
@@ -7,8 +7,8 @@ import { User } from '../../users/entities/user.entity';
 
 @ObjectType()
 export class Order {
-  @Field(() => ID)
-  id: string;
+  @Field(() => Int)
+  id: number;
 
   @Field(() => OrderStatus)
   status: OrderStatus;
@@ -36,7 +36,7 @@ export class Order {
   deliveryAddress?: DeliveryAddress;
 
   constructor(
-    id: string,
+    id: number,
     status: OrderStatus,
     transactionHash: string,
     firstName: string,

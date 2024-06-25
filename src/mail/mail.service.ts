@@ -17,7 +17,7 @@ export class MailService {
     name: string,
   ): Promise<boolean> {
     try {
-      const subject = 'Well Done! You have Claimed Your Exclusive Loot 🎉';
+      const subject = 'Well Done! You have claimed your ' + name;
       const from = {
         email: this.configService.get<string>('MAIL_FROM'),
         name: this.configService.get<string>('MAIL_NAME'),
@@ -47,14 +47,14 @@ export class MailService {
 
   async sendRedeemedLootConfirmation(
     email: string,
+    orderId: number,
     firstName: string,
     lastName: string,
     lootName: string,
     deliveryAddress?: DeliveryAddress,
   ): Promise<boolean> {
     try {
-      const subject =
-        'Order confirmation success! You have ordered your exclusive gift 🎉';
+      const subject = `Congratulations! Your order #${orderId} is confirmed 🎉`;
       const from = {
         email: this.configService.get<string>('MAIL_FROM'),
         name: this.configService.get<string>('MAIL_NAME'),

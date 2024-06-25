@@ -19,7 +19,7 @@ export class DeliveryAddress {
   @Field(() => String)
   country: string;
 
-  orderId: string;
+  orderId: number;
 
   @Field(() => Order)
   order: Order;

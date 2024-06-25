@@ -86,6 +86,7 @@ export class OrdersService {
     const { name } = await this.lootsService.getOneById(lootBox.lootId);
     await this.emailService.sendRedeemedLootConfirmation(
       email,
+      order.id,
       order.firstName,
       order.lastName,
       name,
@@ -105,7 +106,7 @@ export class OrdersService {
   }
 
   async findDeliveryAddressByOrderId(
-    orderId: string,
+    orderId: number,
   ): Promise<DeliveryAddress> {
     try {
       const deliveryAddress =
@@ -122,7 +123,7 @@ export class OrdersService {
   }
 
   async getDeliveryAddressByOrderId(
-    id: string,
+    id: number,
   ): Promise<DeliveryAddress | null> {
     try {
       return await this.findDeliveryAddressByOrderId(id);

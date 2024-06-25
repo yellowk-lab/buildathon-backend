@@ -72,16 +72,16 @@ model Location {
 }
 
 model Order {
-  id                String           @id @default(uuid())
-  status            OrderStatus      @default(PENDING)
-  transactionHash   String           @unique
-  firstName         String
-  lastName          String
-  lootId            String
-  loot              Loot             @relation(fields: [lootId], references: [id])
-  userId            String           @unique
-  user              User             @relation(fields: [userId], references: [id])
-  deliveryAddress   DeliveryAddress?
+  id              Int              @id @default(autoincrement())
+  status          OrderStatus      @default(PENDING)
+  transactionHash String           @unique
+  firstName       String
+  lastName        String
+  lootId          String
+  loot            Loot             @relation(fields: [lootId], references: [id])
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id])
+  deliveryAddress DeliveryAddress?
 }
 
 enum OrderStatus {
@@ -96,7 +96,7 @@ model DeliveryAddress {
   city    String
   zipCode String
   country String
-  orderId String @unique
+  orderId Int    @unique
   order   Order  @relation(fields: [orderId], references: [id])
 }
 

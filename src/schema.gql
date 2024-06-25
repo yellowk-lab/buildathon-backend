@@ -103,7 +103,7 @@ type Mutation {
 type Order {
   deliveryAddress: DeliveryAddress
   firstName: String!
-  id: ID!
+  id: Int!
   lastName: String!
   loot: Loot!
   status: OrderStatus!
