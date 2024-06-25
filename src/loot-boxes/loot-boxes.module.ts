@@ -19,6 +19,6 @@ import { UsersService } from '../users/users.service';
     LocationsService,
     UsersService,
   ],
-  exports: [LootBoxesService, LootsService],
+  exports: [LootBoxesService, LootsService, EventsModule],
 })
 export class LootBoxesModule {}

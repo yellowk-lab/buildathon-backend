@@ -16,7 +16,7 @@ import { Web3Service } from '../web3/web3.service';
 import { EventsService } from '../events/events.service';
 import { formatStringToSlug } from '../common/utils/string.util';
 import { LootsError } from './loots/loots.error';
-import { EventStatus } from '@prisma/client';
+import { EventStatus } from '../events/events.enum';
 
 @Injectable()
 export class LootBoxesService {
@@ -67,9 +67,9 @@ export class LootBoxesService {
   }
 
   async claimLootBox(
-    email: string,
     address: string,
     lootBoxId: string,
+    email?: string,
   ): Promise<LootBox> {
     const lootBox = await this.findOneById(lootBoxId);
 
@@ -79,7 +79,7 @@ export class LootBoxesService {
         'This loot box does not contain any loot to claim',
       );
     }
-    if (lootBox.lootClaimed) {
+    if (lootBox.claimedById) {
       throw new LootBoxesError(
         LootBoxesError.ALREADY_CLAIMED,
         'This loot box has already been claimed',
@@ -105,18 +105,22 @@ export class LootBoxesService {
       await this.lootsService.incrementCirculatingSupply(lootBox.lootId);
       const claimedLootBox = await this.setAndCreateWinner(
         lootBoxId,
-        email,
         address,
         tokenId.toString(),
-      );
-      const emailHasBeenSent = await this.emailService.sendWinnerConfirmation(
         email,
-        loot.imageUrl,
-        loot.name,
       );
-      if (!emailHasBeenSent) {
-        console.log('Mail not send');
+      if (email) {
+        const emailHasBeenSent =
+          await this.emailService.sendClaimedLootConfirmation(
+            email,
+            loot.imageUrl,
+            loot.name,
+          );
+        if (!emailHasBeenSent) {
+          console.log('Mail not send');
+        }
       }
+
       return claimedLootBox;
     } else {
       throw new LootBoxesError(
@@ -138,9 +142,9 @@ export class LootBoxesService {
 
   async setAndCreateWinner(
     lootBoxId: string,
-    userEmail: string,
     userWallet: string,
     lootNftId: string,
+    userEmail?: string,
   ): Promise<LootBox> {
     const moment = this.momentService.get();
     const dateOpened = moment(Date.now()).toDate();
@@ -151,7 +155,7 @@ export class LootBoxesService {
         lootNftId,
         claimedBy: {
           connectOrCreate: {
-            where: { email: userEmail },
+            where: { walletAddress: userWallet },
             create: { email: userEmail, walletAddress: userWallet },
           },
         },
@@ -304,5 +308,26 @@ export class LootBoxesService {
       select: { id: true },
     });
     return lootBoxIds.map((obj) => obj.id);
+  }
+
+  async findOneByNftId(lootNftId: string): Promise<LootBox> {
+    try {
+      const lootBox = await this.prisma.lootBox.findUniqueOrThrow({
+        where: { lootNftId },
+      });
+      return LootBox.create(lootBox);
+    } catch (err) {
+      throw new LootBoxesError(
+        LootBoxesError.NOT_FOUND,
+        'No lootbox with this nft id has been found',
+      );
+    }
+  }
+
+  async validateLootNftId(lootNftId: string): Promise<boolean> {
+    const lootBox = await this.prisma.lootBox.findFirst({
+      where: { lootNftId },
+    });
+    return !!lootBox;
   }
 }

@@ -1,4 +1,4 @@
-import { Field, ObjectType, GraphQLTimestamp, ID } from '@nestjs/graphql';
+import { Field, ObjectType, GraphQLTimestamp } from '@nestjs/graphql';
 import { User } from '../../users/entities/user.entity';
 import { Loot } from './loot.entity';
 import { Event } from '../../events/entities/event.entity';

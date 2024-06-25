@@ -45,6 +45,7 @@ const seedEvents = async () => {
     data: {
       name: 'Block Party SF - 15th June',
       brand: 'Based Block Party',
+      password: '12345',
       description:
         'The first based block party that will take place in Crissy Field SF!',
       startDate: moment().toDate(),

@@ -1,5 +1,5 @@
 import { Field, ID, InputType } from '@nestjs/graphql';
-import { EventStatus } from '../events.enums';
+import { EventStatus } from '../events.enum';
 
 @InputType()
 export class ChangeEventStatusInput {
