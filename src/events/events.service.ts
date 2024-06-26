@@ -7,7 +7,7 @@ import { Moment } from 'moment-timezone';
 import { LootsService } from '../loot-boxes/loots/loots.service';
 import { LootBoxesService } from '../loot-boxes/loot-boxes.service';
 import { CreateEventInput } from './dto/create-event.input';
-import { EventStatus } from './events.enums';
+import { EventStatus } from './events.enum';
 
 @Injectable()
 export class EventsService {
@@ -63,13 +63,11 @@ export class EventsService {
 
   async createEvent(input: CreateEventInput): Promise<Event> {
     const {
-      brand,
-      name,
-      description,
       startDate,
       endDate,
       lootsDistribution,
       lootBoxesAmount,
+      ...eventParams
     } = input;
     const totalAmountOfLoots = lootsDistribution.reduce(
       (a, b) => a + b.amount,
@@ -85,9 +83,7 @@ export class EventsService {
     const { start, end } = this.getVerifiedDates(startDate, endDate);
     const event = await this.prisma.event.create({
       data: {
-        brand: brand,
-        name: name,
-        description: description,
+        ...eventParams,
         startDate: start.toDate(),
         endDate: end.toDate(),
       },
@@ -162,5 +158,10 @@ export class EventsService {
         error,
       );
     }
+  }
+
+  async verifyPassword(id: string, pwd: string): Promise<boolean> {
+    const { password } = await this.findOneById(id);
+    return pwd == password;
   }
 }

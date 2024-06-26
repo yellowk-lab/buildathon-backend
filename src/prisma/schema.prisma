@@ -18,6 +18,7 @@ model Event {
   endDate     DateTime
   brand       String
   name        String
+  password    String
   description String?
   status      EventStatus @default(CREATED)
   lootBoxes   LootBox[]
@@ -31,9 +32,10 @@ enum EventStatus {
 
 model User {
   id               String    @id @default(uuid())
-  email            String    @unique
+  email            String?
   walletAddress    String    @unique
   claimedLootBoxes LootBox[]
+  orders           Order[]
 }
 
 model LootBox {
@@ -43,7 +45,7 @@ model LootBox {
   loot        Loot?     @relation(fields: [lootId], references: [id])
   claimedById String?
   claimedBy   User?     @relation(fields: [claimedById], references: [id])
-  lootNftId   String?
+  lootNftId   String?   @unique
   eventId     String
   event       Event     @relation(fields: [eventId], references: [id])
   locationId  String?   @unique
@@ -57,6 +59,7 @@ model Loot {
   totalSupply       Int
   circulatingSupply Int       @default(0)
   lootBoxes         LootBox[]
+  orders            Order[]
 }
 
 model Location {
@@ -66,6 +69,35 @@ model Location {
   latitude     Float
   longitude    Float
   lootBox      LootBox?
+}
+
+model Order {
+  id              Int              @id @default(autoincrement())
+  status          OrderStatus      @default(PENDING)
+  transactionHash String           @unique
+  firstName       String
+  lastName        String
+  lootId          String
+  loot            Loot             @relation(fields: [lootId], references: [id])
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id])
+  deliveryAddress DeliveryAddress?
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+}
+
+model DeliveryAddress {
+  id      String @id @default(uuid())
+  street  String
+  city    String
+  zipCode String
+  country String
+  orderId Int    @unique
+  order   Order  @relation(fields: [orderId], references: [id])
 }
 
 // ScanEvent should register the lootbox, event, date and user.

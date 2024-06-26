@@ -35,7 +35,6 @@ export class EventsResolver {
         'Access denied: Wrong password',
       );
     }
-
     return await this.eventsService.createEvent(input);
   }
 
@@ -45,13 +44,19 @@ export class EventsResolver {
     @Args('input') input: ChangeEventStatusInput,
     @Args('password') password: string,
   ) {
-    if (password !== this.configService.get<string>('PASSWORD')) {
-      throw new EventsError(
-        EventsError.FORBIDDEN,
-        'Access denied: Wrong password',
-      );
-    }
     const { eventId, newStatus } = input;
+    if (password !== this.configService.get<string>('PASSWORD')) {
+      const isEventPassword = await this.eventsService.verifyPassword(
+        eventId,
+        password,
+      );
+      if (!isEventPassword) {
+        throw new EventsError(
+          EventsError.FORBIDDEN,
+          'Access denied: Wrong password',
+        );
+      }
+    }
     return await this.eventsService.setEventStatus(eventId, newStatus);
   }
 

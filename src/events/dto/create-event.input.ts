@@ -9,6 +9,9 @@ export class CreateEventInput {
   @Field(() => String)
   name: string;
 
+  @Field(() => String)
+  password: string;
+
   @Field(() => String, { nullable: true })
   description?: string;
 

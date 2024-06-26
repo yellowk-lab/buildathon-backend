@@ -21,7 +21,7 @@ import { Loot } from './entities/loot.entity';
 import { LocationsService } from '../locations/locations.service';
 import { EventsService } from '../events/events.service';
 import { Event } from '../events/entities/event.entity';
-import { EventStatus } from '../events/events.enums';
+import { EventStatus } from '../events/events.enum';
 import { UsersService } from '../users/users.service';
 
 @Resolver(() => LootBox)
@@ -73,17 +73,18 @@ export class LootBoxesResolver {
   }
 
   @Query(() => [LootBox], { name: 'lootBoxes' })
-  async getLootBoxesClaimedByUser(@Args('email') email: string) {
-    if (!isEmail(email)) {
-      throw new LootBoxesFieldsError(
-        LootBoxesFieldsError.EMAIL_CODES.INVALID_FORMAT,
-        'Please provide a valid email address',
-        { email: 'Invalid format' },
-      );
+  async getLootBoxesClaimedByUser(
+    @Args('emailOrWallet') emailOrWallet: string,
+  ) {
+    let user = null;
+    if (isEmail(emailOrWallet)) {
+      user = await this.usersService.getOneByEmail(emailOrWallet);
+    } else {
+      user = await this.usersService.getOneByWalletAddress(emailOrWallet);
     }
-    const user = await this.usersService.getOneByEmail(email);
+
     if (user) {
-      return this.lootBoxesService.findAll({ claimedById: user.id });
+      return await this.lootBoxesService.findAll({ claimedById: user.id });
     } else {
       return [];
     }
@@ -93,18 +94,11 @@ export class LootBoxesResolver {
   @UsePipes(new ValidationPipe({ transform: true }))
   async claimLootBox(@Args('input') input: ClaimLootBoxInput) {
     const { email, address, lootBoxId } = input;
-    if (!isEmail(email)) {
-      throw new LootBoxesFieldsError(
-        LootBoxesFieldsError.EMAIL_CODES.INVALID_FORMAT,
-        'Please provide a valid email address',
-        { email: 'Invalid format' },
-      );
-    }
-    const emailLowerCase = email.toLowerCase();
+    const emailLowerCase = email ? email.toLowerCase() : null;
     return this.lootBoxesService.claimLootBox(
-      emailLowerCase,
       address,
       lootBoxId,
+      emailLowerCase,
     );
   }
 
@@ -135,7 +129,7 @@ export class LootBoxesResolver {
     return await this.eventsService.getOneById(eventId);
   }
 
-  @ResolveField('lootClaimed', () => String)
+  @ResolveField('lootClaimed', () => Boolean)
   async hasBeenClaimed(@Parent() lootBox: LootBox) {
     const { claimedById } = lootBox;
     return !!claimedById;

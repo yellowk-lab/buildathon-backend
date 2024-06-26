@@ -14,6 +14,7 @@ import { MailModule } from './mail/mail.module';
 import { EventsModule } from './events/events.module';
 import { Web3Module } from './web3/web3.module';
 import { LocationsModule } from './locations/locations.module';
+import { OrdersModule } from './orders/orders.module';
 
 interface ExceptionType extends GraphQLErrorExtensions {
   status?: string | undefined;
@@ -62,6 +63,7 @@ interface ExceptionType extends GraphQLErrorExtensions {
     EventsModule,
     Web3Module,
     LocationsModule,
+    OrdersModule,
   ],
 })
 export class AppModule {}

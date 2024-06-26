@@ -1,12 +1,13 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsEmail, IsEthereumAddress, IsUUID } from 'class-validator';
+import {
+  IsEmail,
+  IsEthereumAddress,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 
 @InputType()
 export class ClaimLootBoxInput {
-  @IsEmail()
-  @Field(() => String)
-  email: string;
-
   @IsEthereumAddress()
   @Field(() => String)
   address: string;
@@ -14,4 +15,9 @@ export class ClaimLootBoxInput {
   @IsUUID()
   @Field(() => String)
   lootBoxId: string;
+
+  @IsOptional()
+  @IsEmail()
+  @Field(() => String, { nullable: true })
+  email?: string;
 }

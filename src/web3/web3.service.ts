@@ -9,6 +9,8 @@ import {
   Chain,
   publicActions,
   fromHex,
+  decodeFunctionData,
+  isAddressEqual,
 } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -58,6 +60,42 @@ export class Web3Service {
       return tokenId;
     } catch (err) {
       return tokenId;
+    }
+  }
+
+  async tokenIdWasTransferedToContract(
+    txHash: string,
+    from: string,
+    tokenId: bigint,
+  ): Promise<boolean> {
+    try {
+      const { status } = await this.walletClient.getTransactionReceipt({
+        hash: txHash,
+      });
+      const transaction = await this.walletClient.getTransaction({
+        hash: txHash,
+      });
+      const { functionName, args } = decodeFunctionData({
+        abi: lootABI,
+        data: transaction.input,
+      });
+      const [sender, receiver, _tokenId] = args;
+      if (
+        status == 'success' &&
+        args.length == 3 &&
+        functionName == 'transferFrom'
+      ) {
+        const contractAddress = this.configService.get<string>('NFT_CONTRACT');
+        return (
+          from == sender &&
+          isAddressEqual(contractAddress as Address, receiver as Address) &&
+          tokenId == _tokenId
+        );
+      } else {
+        return false;
+      }
+    } catch (err) {
+      return false;
     }
   }
 }

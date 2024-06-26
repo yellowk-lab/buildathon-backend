@@ -8,18 +8,21 @@ export class User {
   id: string;
 
   @Field(() => String)
-  email: string;
-
-  @Field(() => String)
   walletAddress: string;
+
+  @Field(() => String, { nullable: true })
+  email?: string;
 
   @Field(() => [LootBox], { nullable: true })
   claimedLootBoxes?: LootBox[];
 
-  static create(userDb: UserPrisma) {
-    const user = new User();
-    user.id = userDb.id;
-    user.email = userDb.email;
-    return user;
+  constructor(id: string, walletAddress: string, email?: string) {
+    this.id = id;
+    this.walletAddress = walletAddress;
+    this.email = email;
+  }
+
+  static create(user: UserPrisma): User {
+    return new User(user.id, user.walletAddress, user.email);
   }
 }

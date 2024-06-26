@@ -1,12 +1,8 @@
 import { MomentService } from '../../core/moment/moment.service';
 import { LootBox } from '../../loot-boxes/entities/loot-box.entity';
 import { Field, ObjectType, GraphQLTimestamp, ID } from '@nestjs/graphql';
-import {
-  Event as EventPrisma,
-  EventStatus as PrismaEventStatus,
-} from '@prisma/client';
-
-export type EventStatus = PrismaEventStatus;
+import { Event as EventPrisma } from '@prisma/client';
+import { EventStatus } from '../events.enum';
 
 @ObjectType()
 export class Event {
@@ -25,10 +21,12 @@ export class Event {
   @Field(() => String)
   name: string;
 
+  password: string;
+
   @Field(() => String, { nullable: true })
   description?: string;
 
-  @Field(() => String)
+  @Field(() => EventStatus)
   status: EventStatus;
 
   @Field(() => [LootBox], { nullable: true })
@@ -43,8 +41,9 @@ export class Event {
     event.id = eventPrisma.id;
     event.name = eventPrisma.name;
     event.brand = eventPrisma.brand;
+    event.password = eventPrisma.password;
     event.description = eventPrisma.description;
-    event.status = eventPrisma.status;
+    event.status = EventStatus[eventPrisma.status];
     event.startDate = moment(eventPrisma.startDate).toDate();
     event.endDate = moment(eventPrisma.endDate).toDate();
     return event;
