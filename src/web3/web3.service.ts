@@ -69,7 +69,7 @@ export class Web3Service {
     tokenId: bigint,
   ): Promise<boolean> {
     try {
-      const { status } = await this.walletClient.getTransactionReceipt({
+      const { status } = await this.walletClient.waitForTransactionReceipt({
         hash: txHash,
       });
       const transaction = await this.walletClient.getTransaction({
