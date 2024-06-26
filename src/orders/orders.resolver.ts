@@ -8,17 +8,17 @@ import {
 import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
 import { RedeemLootInput } from './dto/redeem-loot.input';
-import { Loot } from '../loot-boxes/entities/loot.entity';
-import { LootsService } from '../loot-boxes/loots/loots.service';
 import { DeliveryAddress } from './entities/delivery-address.entity';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { LootBox } from '../loot-boxes/entities/loot-box.entity';
+import { LootBoxesService } from '../loot-boxes/loot-boxes.service';
 
 @Resolver(() => Order)
 export class OrdersResolver {
   constructor(
     private ordersService: OrdersService,
-    private lootsService: LootsService,
+    private lootBoxesService: LootBoxesService,
     private usersService: UsersService,
   ) {}
 
@@ -27,10 +27,10 @@ export class OrdersResolver {
     return await this.ordersService.processLootRedemption(input);
   }
 
-  @ResolveField(() => Loot, { name: 'loot' })
-  async getLoot(@Parent() order: Order) {
-    const { lootId } = order;
-    return await this.lootsService.getOneById(lootId);
+  @ResolveField(() => LootBox, { name: 'lootBox' })
+  async getLootBox(@Parent() order: Order) {
+    const { lootBoxId } = order;
+    return await this.lootBoxesService.getOneById(lootBoxId);
   }
 
   @ResolveField(() => DeliveryAddress, {

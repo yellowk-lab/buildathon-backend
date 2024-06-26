@@ -23,6 +23,7 @@ import { EventsService } from '../events/events.service';
 import { Event } from '../events/entities/event.entity';
 import { EventStatus } from '../events/events.enum';
 import { UsersService } from '../users/users.service';
+import { OrdersService } from '../orders/orders.service';
 
 @Resolver(() => LootBox)
 export class LootBoxesResolver {
@@ -33,6 +34,7 @@ export class LootBoxesResolver {
     private eventsService: EventsService,
     private usersService: UsersService,
     private configService: ConfigService,
+    private ordersService: OrdersService,
   ) {}
 
   @Query(() => [String], { name: 'lootBoxIdsForEvent' })
@@ -133,5 +135,12 @@ export class LootBoxesResolver {
   async hasBeenClaimed(@Parent() lootBox: LootBox) {
     const { claimedById } = lootBox;
     return !!claimedById;
+  }
+
+  @ResolveField('lootRedeemed', () => Boolean)
+  async hasBeenRedeemed(@Parent() lootBox: LootBox) {
+    const { id } = lootBox;
+    const order = await this.ordersService.getOrderByLootBoxId(id);
+    return !!order;
   }
 }

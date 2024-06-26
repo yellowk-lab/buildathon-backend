@@ -69,7 +69,7 @@ export class Web3Service {
     tokenId: bigint,
   ): Promise<boolean> {
     try {
-      const { status } = await this.walletClient.getTransactionReceipt({
+      const { status } = await this.walletClient.waitForTransactionReceipt({
         hash: txHash,
       });
       const transaction = await this.walletClient.getTransaction({
@@ -87,7 +87,7 @@ export class Web3Service {
       ) {
         const contractAddress = this.configService.get<string>('NFT_CONTRACT');
         return (
-          from == sender &&
+          isAddressEqual(from as Address, sender as Address) &&
           isAddressEqual(contractAddress as Address, receiver as Address) &&
           tokenId == _tokenId
         );

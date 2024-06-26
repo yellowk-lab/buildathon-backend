@@ -15,6 +15,7 @@ import { LootBox } from '@module/loot-boxes/entities/loot-box.entity';
 import { LootBoxesService } from '@module/loot-boxes/loot-boxes.service';
 import { ChangeEventStatusInput } from './dto/change-event-status.input';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
+import { CreateDemoEventInput } from './dto/create-demo-event.input';
 
 @Resolver(() => Event)
 export class EventsResolver {
@@ -58,6 +59,11 @@ export class EventsResolver {
       }
     }
     return await this.eventsService.setEventStatus(eventId, newStatus);
+  }
+
+  @Mutation(() => Event)
+  async createDemoEvent(@Args('input') input: CreateDemoEventInput) {
+    return await this.eventsService.createDemoEvent(input);
   }
 
   @Query(() => [Event], { name: 'events' })

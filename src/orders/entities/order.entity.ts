@@ -1,14 +1,17 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Order as OrderPrisma } from '@prisma/client';
 import { OrderStatus } from '../orders.enum';
-import { Loot } from '../../loot-boxes/entities/loot.entity';
 import { DeliveryAddress } from './delivery-address.entity';
 import { User } from '../../users/entities/user.entity';
+import { LootBox } from '../../loot-boxes/entities/loot-box.entity';
 
 @ObjectType()
 export class Order {
+  @Field(() => ID)
+  id: string;
+
   @Field(() => Int)
-  id: number;
+  trackingNumber: number;
 
   @Field(() => OrderStatus)
   status: OrderStatus;
@@ -22,10 +25,10 @@ export class Order {
   @Field(() => String)
   lastName: string;
 
-  lootId: string;
+  lootBoxId: string;
 
-  @Field(() => Loot)
-  loot: Loot;
+  @Field(() => LootBox)
+  lootBox: LootBox;
 
   userId: string;
 
@@ -36,31 +39,34 @@ export class Order {
   deliveryAddress?: DeliveryAddress;
 
   constructor(
-    id: number,
+    id: string,
+    trackingNumber: number,
     status: OrderStatus,
     transactionHash: string,
     firstName: string,
     lastName: string,
-    lootId: string,
+    lootBoxId: string,
     userId: string,
   ) {
     this.id = id;
+    this.trackingNumber = trackingNumber;
     this.status = status;
     this.transactionHash = transactionHash;
     this.firstName = firstName;
     this.lastName = lastName;
-    this.lootId = lootId;
+    this.lootBoxId = lootBoxId;
     this.userId = userId;
   }
 
   static create(order: OrderPrisma): Order {
     return new Order(
       order.id,
+      order.trackingNumber,
       OrderStatus[order.status],
       order.transactionHash,
       order.firstName,
       order.lastName,
-      order.lootId,
+      order.lootBoxId,
       order.userId,
     );
   }

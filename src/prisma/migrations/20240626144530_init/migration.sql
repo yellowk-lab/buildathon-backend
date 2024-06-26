@@ -64,12 +64,13 @@ CREATE TABLE "Location" (
 
 -- CreateTable
 CREATE TABLE "Order" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
+    "trackingNumber" SERIAL NOT NULL,
     "status" "OrderStatus" NOT NULL DEFAULT 'PENDING',
     "transactionHash" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
-    "lootId" TEXT NOT NULL,
+    "lootBoxId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
@@ -82,7 +83,7 @@ CREATE TABLE "DeliveryAddress" (
     "city" TEXT NOT NULL,
     "zipCode" TEXT NOT NULL,
     "country" TEXT NOT NULL,
-    "orderId" INTEGER NOT NULL,
+    "orderId" TEXT NOT NULL,
 
     CONSTRAINT "DeliveryAddress_pkey" PRIMARY KEY ("id")
 );
@@ -100,7 +101,7 @@ CREATE UNIQUE INDEX "LootBox_locationId_key" ON "LootBox"("locationId");
 CREATE UNIQUE INDEX "Order_transactionHash_key" ON "Order"("transactionHash");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Order_userId_key" ON "Order"("userId");
+CREATE UNIQUE INDEX "Order_lootBoxId_key" ON "Order"("lootBoxId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "DeliveryAddress_orderId_key" ON "DeliveryAddress"("orderId");
@@ -118,7 +119,7 @@ ALTER TABLE "LootBox" ADD CONSTRAINT "LootBox_eventId_fkey" FOREIGN KEY ("eventI
 ALTER TABLE "LootBox" ADD CONSTRAINT "LootBox_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Order" ADD CONSTRAINT "Order_lootId_fkey" FOREIGN KEY ("lootId") REFERENCES "Loot"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Order" ADD CONSTRAINT "Order_lootBoxId_fkey" FOREIGN KEY ("lootBoxId") REFERENCES "LootBox"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

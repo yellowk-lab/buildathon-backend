@@ -65,7 +65,7 @@ export class OrdersService {
 
     const orderPrisma = await this.prisma.order.create({
       data: {
-        lootId: lootBox.lootId,
+        lootBoxId: lootBox.id,
         userId: owner.id,
         transactionHash,
         firstName,
@@ -86,7 +86,7 @@ export class OrdersService {
     const { name } = await this.lootsService.getOneById(lootBox.lootId);
     await this.emailService.sendRedeemedLootConfirmation(
       email,
-      order.id,
+      order.trackingNumber,
       order.firstName,
       order.lastName,
       name,
@@ -106,7 +106,7 @@ export class OrdersService {
   }
 
   async findDeliveryAddressByOrderId(
-    orderId: number,
+    orderId: string,
   ): Promise<DeliveryAddress> {
     try {
       const deliveryAddress =
@@ -123,10 +123,21 @@ export class OrdersService {
   }
 
   async getDeliveryAddressByOrderId(
-    id: number,
+    id: string,
   ): Promise<DeliveryAddress | null> {
     try {
       return await this.findDeliveryAddressByOrderId(id);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async getOrderByLootBoxId(lootBoxId: string): Promise<Order | null> {
+    try {
+      const order = await this.prisma.order.findUniqueOrThrow({
+        where: { lootBoxId },
+      });
+      return Order.create(order);
     } catch (err) {
       return null;
     }

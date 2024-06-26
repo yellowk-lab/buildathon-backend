@@ -50,6 +50,7 @@ model LootBox {
   event       Event     @relation(fields: [eventId], references: [id])
   locationId  String?   @unique
   location    Location? @relation(fields: [locationId], references: [id])
+  Order       Order?
 }
 
 model Loot {
@@ -59,7 +60,6 @@ model Loot {
   totalSupply       Int
   circulatingSupply Int       @default(0)
   lootBoxes         LootBox[]
-  orders            Order[]
 }
 
 model Location {
@@ -72,14 +72,15 @@ model Location {
 }
 
 model Order {
-  id              Int              @id @default(autoincrement())
+  id              String           @id @default(uuid())
+  trackingNumber  Int              @default(autoincrement())
   status          OrderStatus      @default(PENDING)
   transactionHash String           @unique
   firstName       String
   lastName        String
-  lootId          String
-  loot            Loot             @relation(fields: [lootId], references: [id])
-  userId          String           @unique
+  lootBoxId       String           @unique
+  lootBox         LootBox          @relation(fields: [lootBoxId], references: [id])
+  userId          String
   user            User             @relation(fields: [userId], references: [id])
   deliveryAddress DeliveryAddress?
 }
@@ -96,7 +97,7 @@ model DeliveryAddress {
   city    String
   zipCode String
   country String
-  orderId Int    @unique
+  orderId String @unique
   order   Order  @relation(fields: [orderId], references: [id])
 }
 
