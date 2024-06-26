@@ -8,6 +8,10 @@ import { LootsService } from '../loot-boxes/loots/loots.service';
 import { LootBoxesService } from '../loot-boxes/loot-boxes.service';
 import { CreateEventInput } from './dto/create-event.input';
 import { EventStatus } from './events.enum';
+import { CreateDemoEventInput } from './dto/create-demo-event.input';
+import { generateRandomLocations } from '../prisma/seeds/utils';
+import { GeographicCoordinate } from '../common/utils/geolocalisation.util';
+import { LootBox } from '../loot-boxes/entities/loot-box.entity';
 
 @Injectable()
 export class EventsService {
@@ -163,5 +167,32 @@ export class EventsService {
   async verifyPassword(id: string, pwd: string): Promise<boolean> {
     const { password } = await this.findOneById(id);
     return pwd == password;
+  }
+
+  async createDemoEvent(input: CreateDemoEventInput): Promise<Event> {
+    const { latitude, longitude, ...createEventInput } = input;
+    const event = await this.createEvent(createEventInput);
+
+    const eventLootBoxes = await this.lootBoxesService.findManyByEventId(
+      event.id,
+    );
+    const randomLocations: GeographicCoordinate[] = generateRandomLocations(
+      latitude,
+      longitude,
+      500,
+      eventLootBoxes.length,
+    );
+    const lootBoxIds: string[] = [];
+    for (let i = 0; i < eventLootBoxes.length; i++) {
+      const lootBox: LootBox = eventLootBoxes[i];
+      const coordinate: GeographicCoordinate = randomLocations[i];
+      await this.lootBoxesService.upsertLootBoxLocation(lootBox.id, coordinate);
+      lootBoxIds.push(lootBox.id);
+    }
+    const updatedEvent = await this.setEventStatus(
+      event.id,
+      EventStatus.ACTIVE,
+    );
+    return updatedEvent;
   }
 }

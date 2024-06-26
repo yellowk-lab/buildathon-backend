@@ -7,6 +7,7 @@ import { EventsModule } from '../events/events.module';
 import { Web3Service } from '../web3/web3.service';
 import { LocationsService } from '../locations/locations.service';
 import { UsersService } from '../users/users.service';
+import { OrdersService } from '../orders/orders.service';
 
 @Module({
   imports: [EventsModule],
@@ -18,6 +19,7 @@ import { UsersService } from '../users/users.service';
     Web3Service,
     LocationsService,
     UsersService,
+    OrdersService,
   ],
   exports: [LootBoxesService, LootsService],
 })

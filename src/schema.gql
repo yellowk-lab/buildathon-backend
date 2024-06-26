@@ -13,6 +13,19 @@ input ClaimLootBoxInput {
   lootBoxId: String!
 }
 
+input CreateDemoEventInput {
+  brand: String!
+  description: String
+  endDate: Timestamp!
+  latitude: Float!
+  longitude: Float!
+  lootBoxesAmount: Int!
+  lootsDistribution: [LootDistribution!]!
+  name: String!
+  password: String!
+  startDate: Timestamp!
+}
+
 input CreateEventInput {
   brand: String!
   description: String
@@ -84,6 +97,7 @@ type LootBox {
   loot: Loot
   lootClaimed: Boolean!
   lootNftId: String
+  lootRedeemed: Boolean!
 }
 
 input LootDistribution {
@@ -96,6 +110,7 @@ type Mutation {
   assignLocationToLootBox(input: ScanLootBoxInput!): LootBox!
   changeEventStatus(input: ChangeEventStatusInput!, password: String!): Event!
   claimLootBox(input: ClaimLootBoxInput!): LootBox!
+  createDemoEvent(input: CreateDemoEventInput!): Event!
   createEvent(input: CreateEventInput!, password: String!): Event!
   redeemLoot(input: RedeemLootInput!): Order!
 }
@@ -103,10 +118,11 @@ type Mutation {
 type Order {
   deliveryAddress: DeliveryAddress
   firstName: String!
-  id: Int!
+  id: ID!
   lastName: String!
-  loot: Loot!
+  lootBox: LootBox!
   status: OrderStatus!
+  trackingNumber: Int!
   transactionHash: String!
   user: User!
 }
