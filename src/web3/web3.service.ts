@@ -69,23 +69,16 @@ export class Web3Service {
     tokenId: bigint,
   ): Promise<boolean> {
     try {
-      const { status } = await this.walletClient.waitForTransactionReceipt({
-        hash: txHash,
-      });
-      const transaction = await this.walletClient.getTransaction({
-        hash: txHash,
-      });
-      const { functionName, args } = decodeFunctionData({
-        abi: lootABI,
-        data: transaction.input,
-      });
-      const [sender, receiver, _tokenId] = args;
-      if (
-        status == 'success' &&
-        args.length == 3 &&
-        functionName == 'transferFrom'
-      ) {
-        const contractAddress = this.configService.get<string>('NFT_CONTRACT');
+      const { status, logs } =
+        await this.walletClient.waitForTransactionReceipt({
+          hash: txHash,
+        });
+      const contractAddress = this.configService.get<string>('NFT_CONTRACT');
+      const log = logs.filter((l) => l.address === contractAddress)[0];
+      const [_, sender, receiver, _tokenId] = log?.topics.map(
+        (l) => `0x${l.slice(-40)}`,
+      );
+      if (status == 'success') {
         return (
           isAddressEqual(from as Address, sender as Address) &&
           isAddressEqual(contractAddress as Address, receiver as Address) &&
@@ -95,6 +88,7 @@ export class Web3Service {
         return false;
       }
     } catch (err) {
+      console.log(err);
       return false;
     }
   }
